@@ -1,0 +1,17 @@
+name: pandas_vis
+channels:
+- defaults
+- anaconda
+- conda-forge
+dependencies:
+- python=3.7
+- pip
+- ipython
+- numpy
+- pandas
+- jupyter
+- matplotlib
+- pyqt
+- pyqtgraph
+- pip:
+  - -e .
