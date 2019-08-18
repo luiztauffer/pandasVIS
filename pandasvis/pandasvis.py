@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, Qt
 from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem,
     QMainWindow, QFileDialog, QAction, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QPushButton, QTreeWidgetItemIterator)
+    QPushButton, QTreeWidgetItemIterator, QTabWidget)
 from console_widget import ConsoleWidget
 import pandas as pd
 import numpy as np
@@ -49,7 +49,7 @@ class Application(QMainWindow):
         helpMenu.addAction(action_about)
         #action_about.triggered.connect(self.about)
 
-        # Window layout --------------------------------------------------------
+        # Left panels ----------------------------------------------------------
         self.tree_primary = QTreeWidget ()
         self.tree_primary.setHeaderLabels(['Primary'])
         #self.tree_primary.itemClicked.connect(self.onItemClicked)
@@ -61,13 +61,31 @@ class Application(QMainWindow):
         self.grid_left1.addWidget(self.tree_primary, 0, 0, 1, 6)
         self.grid_left1.addWidget(self.tree_secondary, 1, 0, 1, 6)
 
+         # Center panels -------------------------------------------------------
+        self.tabs = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tabs.resize(600,600)
+        self.tabs.addTab(self.tab1,"Tab 1")
+        self.tabs.addTab(self.tab2,"Tab 2")
+         # Create first tab
+        #self.tab1.layout = QVBoxLayout()
+        #self.pushButton1 = QPushButton("PyQt5 button")
+        #self.tab1.layout.addWidget(self.pushButton1)
+        #self.tab1.setLayout(self.tab1.layout)
+
         self.console = ConsoleWidget(par=self)
-        self.vbox2 = QVBoxLayout()
-        self.vbox2.addWidget(self.console)
+
+        self.vbox1 = QVBoxLayout()
+        self.vbox1.addWidget(self.tabs)
+        self.vbox1.addWidget(self.console)
+
+        #self.vbox2 = QVBoxLayout()
+        #self.vbox2.addWidget(self.console)
 
         self.hbox = QHBoxLayout(self.centralwidget)
-        self.hbox.addLayout(self.grid_left1)    #add first tree
-        self.hbox.addLayout(self.vbox2)    #add second tree
+        self.hbox.addLayout(self.grid_left1)      #add left panel
+        self.hbox.addLayout(self.vbox1)    #add centre panel
 
 
     def open_file(self, filename):

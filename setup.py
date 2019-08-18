@@ -14,6 +14,6 @@ setup(name = 'pandasVIS',
       email = 'luiz@taufferconsulting.com',
       packages=find_packages(),
       include_package_data = True,
-      install_requires = ['PyQt5', 'matplotlib', 'numpy',
+      install_requires = ['PyQt5', 'matplotlib', 'numpy', 'pandas-profiling',
                           'pyqtgraph', 'pandas'],
       )
