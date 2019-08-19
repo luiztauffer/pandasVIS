@@ -14,5 +14,5 @@ dependencies:
 - pyqt
 - pyqtgraph
 - pandas-profiling
-- pip:
-  - -e .
+#- pip:
+#  - -e .
