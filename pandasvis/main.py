@@ -4,8 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem
     QPushButton, QTreeWidgetItemIterator, QTabWidget)
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
-
-from console_widget import ConsoleWidget
+from pandasvis.classes.console_widget import ConsoleWidget
 import numpy as np
 import pandas as pd
 import pandas_profiling
@@ -60,15 +59,17 @@ class Application(QMainWindow):
         #action_about.triggered.connect(self.about)
 
         # Left panels ----------------------------------------------------------
-        self.tree_primary = QTreeCustomPrimary()
+        self.tree_primary = QTreeCustomPrimary(parent=self)
         self.tree_primary.setHeaderLabels(['Primary Variables'])
         #self.tree_primary.itemClicked.connect(self.onItemClicked)
-        self.tree_secondary = QTreeCustomSecondary()
+        self.tree_secondary = QTreeCustomSecondary(parent=self)
         self.tree_secondary.setHeaderLabels(['Secondary Variables'])
         #self.tree_secondary.itemClicked.connect(self.onItemClicked)
 
-        self.primary_names = ['var 1', 'var 2']
-        self.secondary_names = ['var 3', 'var 4']
+        self.df = pd.DataFrame(np.random.rand(100, 5), columns=['a', 'b', 'c', 'd', 'e'])
+        self.primary_names = list(self.df.keys())
+        self.secondary_vars = {'var 3':np.zeros(10), 'var 4':np.zeros(10)}
+        self.secondary_names = list(self.secondary_vars.keys())
         self.init_trees()
 
         self.grid_left1 = QGridLayout()
@@ -111,6 +112,8 @@ class Application(QMainWindow):
             self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width':True}, )
             self.df_profile.to_file(os.path.join(self.temp_dir,'summary_report.html'), silent=True)
             self.setWindowTitle('PandasVIS - '+os.path.split(os.path.abspath(self.file_path))[1])
+            self.secondary_vars = {'var 3':np.zeros(10), 'var 4':np.zeros(10)}
+            self.secondary_names = list(self.secondary_vars.keys())
             self.init_trees()
             self.init_console()
             self.refresh_tab1()

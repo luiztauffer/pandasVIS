@@ -2,8 +2,9 @@ from PyQt5 import QtCore, QtGui, Qt
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 
 class QTreeCustomPrimary(QTreeWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
+        self.parent = parent
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenuEvent)
 
@@ -13,11 +14,11 @@ class QTreeCustomPrimary(QTreeWidget):
         if index.isValid():
             item = self.itemAt(event)
             name = item.text(0)  #The text of the node
-            self.contextMenu1(name)
+            self.contextMenu1(name=name, event=event)
         else:
             name = None
 
-    def contextMenu1(self, name):
+    def contextMenu1(self, name, event):
         self.menu = QMenu()
         var_name = self.menu.addAction(name)
         f = QtGui.QFont()
@@ -30,14 +31,28 @@ class QTreeCustomPrimary(QTreeWidget):
         act_groupby = self.menu.addAction('Group-by')
         act_secondary = self.menu.addAction('Move to Secondary')
         act_delete = self.menu.addAction('Delete')
-        #action = self.menu.exec_(self.mapToGlobal(event.pos()))
-        self.menu.popup(QtGui.QCursor.pos())
 
+        self.menu.popup(QtGui.QCursor.pos())
+        action = self.menu.exec_(self.mapToGlobal(event))
+
+        if action.text()=='Summary':
+            print('')
+        if action.text()=='Set as Index':
+            print('')
+        if action.text()=='Transform':
+            print('')
+        if action.text()=='Group-by':
+            print('')
+        if action.text()=='Move to Secondary':
+            move_to_secondary(parent=self.parent, name=name)
+        if action.text()=='Delete':
+            print('')
 
 
 class QTreeCustomSecondary(QTreeWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
+        self.parent = parent
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.contextMenuEvent)
 
@@ -47,11 +62,11 @@ class QTreeCustomSecondary(QTreeWidget):
         if index.isValid():
             item = self.itemAt(event)
             name = item.text(0)  #The text of the node
-            self.contextMenu1(name)
+            self.contextMenu1(name=name, event=event)
         else:
             name = None
 
-    def contextMenu1(self, name):
+    def contextMenu1(self, name, event):
         self.menu = QMenu()
         var_name = self.menu.addAction(name)
         f = QtGui.QFont()
@@ -62,5 +77,40 @@ class QTreeCustomSecondary(QTreeWidget):
         act_transform = self.menu.addAction('Transform')
         act_primary = self.menu.addAction('Move to Primary')
         act_delete = self.menu.addAction('Delete')
-        #action = self.menu.exec_(self.mapToGlobal(event.pos()))
+
         self.menu.popup(QtGui.QCursor.pos())
+        action = self.menu.exec_(self.mapToGlobal(event))
+
+        if action.text()=='Summary':
+            print('')
+        if action.text()=='Transform':
+            print('')
+        if action.text()=='Move to Primary':
+            move_to_primary(parent=self.parent, name=name)
+        if action.text()=='Delete':
+            print('')
+
+
+
+
+def move_to_secondary(parent, name):
+    """Moves a variable from Primary to Secondary list of variables. Removes it from df."""
+    parent.secondary_vars[name] = parent.df[name].to_list()
+    parent.secondary_names = list(parent.secondary_vars.keys())
+    parent.df.drop(name, axis=1, inplace=True)
+    parent.primary_names = parent.df.keys().tolist()
+    print(parent.primary_names)
+    print(parent.secondary_names)
+    parent.init_trees()
+
+def move_to_primary(parent, name):
+    """Moves a variable from Secondary to Primary list of variables. Adds it to df."""
+    if parent.df.shape[0] == len(parent.secondary_vars[name]):
+        parent.df[name] = parent.secondary_vars[name]
+        parent.primary_names = parent.df.keys().tolist()
+        del parent.secondary_vars[name]
+        parent.secondary_names = list(parent.secondary_vars.keys())
+        parent.init_trees()
+    else:
+        #TO-DO needs to raise a popup warning in the future
+        print('Variable of different length from df')
