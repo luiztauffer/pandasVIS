@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem
     QMainWindow, QFileDialog, QAction, QVBoxLayout, QHBoxLayout, QGridLayout,
     QPushButton, QTreeWidgetItemIterator, QTabWidget)
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
-from pandasvis.classes.QTreeCustom import QTreeCustomPrimary
+from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
 
 from console_widget import ConsoleWidget
 import numpy as np
@@ -60,14 +60,15 @@ class Application(QMainWindow):
         #action_about.triggered.connect(self.about)
 
         # Left panels ----------------------------------------------------------
-        self.tree_primary = QTreeCustomPrimary() #QTreeWidget()
+        self.tree_primary = QTreeCustomPrimary()
         self.tree_primary.setHeaderLabels(['Primary Variables'])
         #self.tree_primary.itemClicked.connect(self.onItemClicked)
-        self.tree_secondary = QTreeWidget()
+        self.tree_secondary = QTreeCustomSecondary()
         self.tree_secondary.setHeaderLabels(['Secondary Variables'])
         #self.tree_secondary.itemClicked.connect(self.onItemClicked)
 
-        self.primary_names = ['name 1', 'name 2']
+        self.primary_names = ['var 1', 'var 2']
+        self.secondary_names = ['var 3', 'var 4']
         self.init_trees()
 
         self.grid_left1 = QGridLayout()
@@ -123,6 +124,11 @@ class Application(QMainWindow):
             parent.setText(0, var1)
             parent.setFlags(parent.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             parent.setCheckState(0, QtCore.Qt.Checked)
+        for var2 in self.secondary_names:  #secondary variables list
+            parent = QTreeWidgetItem(self.tree_secondary)
+            parent.setText(0, var2)
+            parent.setFlags(parent.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+            parent.setCheckState(0, QtCore.Qt.Checked)
 
     def init_console(self):
         ''' Initialize commands on console '''
@@ -131,33 +137,12 @@ class Application(QMainWindow):
         self.console._execute("import matplotlib.pyplot as plt", True)
         self.console.push_vars({'df':self.df})
         self.console.clear()
+        self.console.print_text('df --> Dataframe with Primary variables')
 
     def refresh_tab1(self):
         url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir,'summary_report.html'))
         self.webview.load(url)
         self.webview.show()
-
-    def onItemClicked(self, it, col):
-        if self.auto_clear:  #clears terminal
-            self.console.clear()
-        if it.parent() is not None: #2nd level groups (at least)
-            field1 = it.parent().text(0)
-            field0 = it.text(0)
-            if it.parent().parent() is not None: #3rd level groups
-                field2 = it.parent().parent().text(0)
-                if field1=='ecephys':
-                    item = self.nwb.fields[field2][field1].data_interfaces[field0]
-            else:
-                field2 = None
-                item = self.nwb.fields[field1][field0]
-        else: #1st level groups ('acquisition','electrodes', etc...)
-            field2 = None
-            field1 = None
-            field0 = it.text(0)
-            item = self.nwb.fields[field0]
-        self.console.push_vars({'tree':self.tree})
-        self.console.push_vars({'item':item})
-        self.console._execute("print(item)", False)
 
     def find_selected_items(self):
         """Iterate over all children of the tree and save selected items to dictionary."""
