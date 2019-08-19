@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem
     QMainWindow, QFileDialog, QAction, QVBoxLayout, QHBoxLayout, QGridLayout,
     QPushButton, QTreeWidgetItemIterator, QTabWidget)
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+from pandasvis.classes.QTreeCustom import QTreeCustomPrimary
 
 from console_widget import ConsoleWidget
 import numpy as np
@@ -27,6 +28,11 @@ class Application(QMainWindow):
         # Opens file (if argument was passed)
         if filename is not None:
             self.open_file()
+
+        # Creates temp folder for temporary files
+        self.temp_dir = os.path.join(os.getcwd(),'temp')
+        if not os.path.exists(self.temp_dir):
+            os.makedirs(self.temp_dir, exist_ok=True)
 
         self.show()
 
@@ -54,12 +60,15 @@ class Application(QMainWindow):
         #action_about.triggered.connect(self.about)
 
         # Left panels ----------------------------------------------------------
-        self.tree_primary = QTreeWidget()
+        self.tree_primary = QTreeCustomPrimary() #QTreeWidget()
         self.tree_primary.setHeaderLabels(['Primary Variables'])
         #self.tree_primary.itemClicked.connect(self.onItemClicked)
         self.tree_secondary = QTreeWidget()
         self.tree_secondary.setHeaderLabels(['Secondary Variables'])
         #self.tree_secondary.itemClicked.connect(self.onItemClicked)
+
+        self.primary_names = ['name 1', 'name 2']
+        self.init_trees()
 
         self.grid_left1 = QGridLayout()
         self.grid_left1.addWidget(self.tree_primary, 0, 0, 1, 6)
@@ -99,9 +108,6 @@ class Application(QMainWindow):
             self.df = pd.read_csv(self.file_path)
             self.primary_names = self.df.keys().tolist()
             self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width':True}, )
-            self.temp_dir = os.path.join(os.getcwd(),'temp')
-            if not os.path.exists(self.temp_dir):
-                os.makedirs(self.temp_dir, exist_ok=True)
             self.df_profile.to_file(os.path.join(self.temp_dir,'summary_report.html'), silent=True)
             self.setWindowTitle('PandasVIS - '+os.path.split(os.path.abspath(self.file_path))[1])
             self.init_trees()
