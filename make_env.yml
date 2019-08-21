@@ -3,6 +3,7 @@ channels:
 - defaults
 - anaconda
 - conda-forge
+- plotly
 dependencies:
 - python=3.7
 - pip
@@ -14,5 +15,7 @@ dependencies:
 - pyqt
 - pyqtgraph
 - pandas-profiling
+- plotly
+- python-cufflinks
 - pip:
   - -e .

@@ -35,18 +35,19 @@ class QTreeCustomPrimary(QTreeWidget):
         self.menu.popup(QtGui.QCursor.pos())
         action = self.menu.exec_(self.mapToGlobal(event))
 
-        if action.text()=='Summary':
-            print('')
-        if action.text()=='Set as Index':
-            print('')
-        if action.text()=='Transform':
-            print('')
-        if action.text()=='Group-by':
-            print('')
-        if action.text()=='Move to Secondary':
-            move_to_secondary(parent=self.parent, name=name)
-        if action.text()=='Delete':
-            print('')
+        if action is not None:
+            if action.text()=='Summary':
+                print('')
+            if action.text()=='Set as Index':
+                print('')
+            if action.text()=='Transform':
+                print('')
+            if action.text()=='Group-by':
+                print('')
+            if action.text()=='Move to Secondary':
+                move_to_secondary(parent=self.parent, name=name)
+            if action.text()=='Delete':
+                print('')
 
 
 class QTreeCustomSecondary(QTreeWidget):
@@ -81,14 +82,15 @@ class QTreeCustomSecondary(QTreeWidget):
         self.menu.popup(QtGui.QCursor.pos())
         action = self.menu.exec_(self.mapToGlobal(event))
 
-        if action.text()=='Summary':
-            print('')
-        if action.text()=='Transform':
-            print('')
-        if action.text()=='Move to Primary':
-            move_to_primary(parent=self.parent, name=name)
-        if action.text()=='Delete':
-            print('')
+        if action is not None:
+            if action.text()=='Summary':
+                print('')
+            if action.text()=='Transform':
+                print('')
+            if action.text()=='Move to Primary':
+                move_to_primary(parent=self.parent, name=name)
+            if action.text()=='Delete':
+                print('')
 
 
 
@@ -99,8 +101,10 @@ def move_to_secondary(parent, name):
     parent.secondary_names = list(parent.secondary_vars.keys())
     parent.df.drop(name, axis=1, inplace=True)
     parent.primary_names = parent.df.keys().tolist()
-    print(parent.primary_names)
-    print(parent.secondary_names)
+    #update df and secondary_vars on console
+    parent.console.push_vars({'df':parent.df})
+    parent.console.push_vars({'secondary_vars':parent.secondary_vars})
+    #update trees
     parent.init_trees()
 
 def move_to_primary(parent, name):
@@ -110,6 +114,10 @@ def move_to_primary(parent, name):
         parent.primary_names = parent.df.keys().tolist()
         del parent.secondary_vars[name]
         parent.secondary_names = list(parent.secondary_vars.keys())
+        #update df and secondary_vars on console
+        parent.console.push_vars({'df':parent.df})
+        parent.console.push_vars({'secondary_vars':parent.secondary_vars})
+        #update trees
         parent.init_trees()
     else:
         #TO-DO needs to raise a popup warning in the future
