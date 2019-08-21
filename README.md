@@ -1,6 +1,8 @@
 # PandasVIS
 Tabular data exploration GUI, with Data Science and Machine Learning tools.
 
+Powered by: [Pandas](https://pandas.pydata.org/), [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro), [Pandas Profiling](https://github.com/pandas-profiling/pandas-profiling), [Plotly](https://plot.ly/)
+
 ### Installation
 To clone the repository and set up a conda environment, do:
 
