@@ -184,6 +184,7 @@ class Application(QMainWindow):
         url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir,'summary_report.html'))
         self.webview.load(url)
         self.webview.show()
+        self.tabs.setCurrentIndex(0)
 
     def refresh_overview(self):
         """Produces new profile overview with current df"""
@@ -197,6 +198,7 @@ class Application(QMainWindow):
         url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir,'scatter_matrix.html'))
         self.scatter_matrix.load(url)
         self.scatter_matrix.show()
+        self.tabs.setCurrentIndex(1)
 
     def make_scatter_matrix(self):
         """Produces new scatter matrix plot with selected variables"""
