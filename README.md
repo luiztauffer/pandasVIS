@@ -33,3 +33,4 @@ $ python call_pandas_vis.py
 ```
 
 ### Examples
+![](media/gif_1.gif)
