@@ -26,8 +26,14 @@ def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
     else:
         groups_names = ['all']
 
+    #Remove non-numerical columns
+    for col in columns:
+        dtype = str(df[col].dtypes)
+        if not (dtype=='int64' or dtype=='float64'):
+            columns.remove(col)
+
     nVars = len(columns)
-    figs = tools.make_subplots(rows=nVars, cols=nVars)
+    figs = tools.make_subplots(rows=nVars, cols=nVars, print_grid=False)
 
     for cgrp, grp in enumerate(groups_names):
         if grp == 'all':
@@ -39,12 +45,12 @@ def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
             for cj, j in enumerate(columns):
                 ii += 1
                 if i==j:  #Univariate distribution
-                    Ym = np.min(df[i].to_numpy())
-                    YM = np.max(df[i].to_numpy())
                     y = df_aux[i].to_numpy()
-                    if kde_width is None:
-                        bandwidth = 0.1*np.nanstd(y)/np.nanmean(y)
                     if hist_type=='kde':    #Gaussian KDE
+                        if kde_width is None:
+                            bandwidth = 0.1*np.nanstd(y)/np.nanmean(y)
+                        Ym = np.min(df[i].to_numpy())
+                        YM = np.max(df[i].to_numpy())
                         xx = np.linspace(Ym, YM, 200)
                         kde = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(y.reshape(-1, 1))
                         log_dens = kde.score_samples(xx.reshape(-1, 1))
@@ -101,14 +107,22 @@ def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
                     figs['layout']['yaxis'+str(ii+1)].update(title=i)
                 figs.append_trace(fig, ci+1, cj+1)
 
+        #Legend
         legend_layout = go.layout.Legend(
             font=dict(size=15, color="black"),
         )
         figs.layout.update(legend=legend_layout)
+        #Title
+        title_layout = go.layout.Title(
+            text=['Grouped by '+groupby if groupby is not None else None][0],
+            xref="paper",
+            x=0,
+        )
+        figs.layout.update(title=title_layout)
 
-        figs['layout']['xaxis1'].update(anchor='x2')
-        figs['layout']['xaxis2'].update(anchor='x2')
-        figs['layout']['xaxis3'].update(anchor='x2')
+        #figs['layout']['xaxis1'].update(anchor='x2')
+        #figs['layout']['xaxis2'].update(anchor='x2')
+        #figs['layout']['xaxis3'].update(anchor='x2')
 
 
     return figs

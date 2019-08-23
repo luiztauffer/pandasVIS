@@ -7,6 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
 from pandasvis.classes.cufflinks_subs import custom_scatter_matrix
+from pandasvis.classes.dialogs_filter import FilterVariablesDialog
 import numpy as np
 import pandas as pd
 import pandas_profiling
@@ -209,11 +210,14 @@ class Application(QMainWindow):
         #Select variables from Dataframe
         self.update_selected_primary()
         df = self.df[self.selected_primary]
-        #Generate a dictionary of plotly plots
-        a = custom_scatter_matrix(df, groupby='name')
-        #Saves html to temporary folder
-        ptl_plot(a, filename=os.path.join(self.temp_dir,'scatter_matrix.html'), auto_open=False)
-        self.refresh_tab2()
+        #Open filter by condition dialog
+        w = FilterVariablesDialog(self, df)
+        if w.value==1:
+            #Generate a dictionary of plotly plots
+            a = custom_scatter_matrix(df)#, groupby='name')
+            #Saves html to temporary folder
+            ptl_plot(a, filename=os.path.join(self.temp_dir,'scatter_matrix.html'), auto_open=False)
+            self.refresh_tab2()
 
     def update_selected_primary(self):
         """Iterate over all nodes of the tree and save selected items names to list"""
