@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
+from pandasvis.classes.cufflinks_subs import custom_scatter_matrix
 import numpy as np
 import pandas as pd
 import pandas_profiling
@@ -75,15 +76,18 @@ class Application(QMainWindow):
         self.tree_primary.setHeaderLabels(['Primary Variables'])
         self.tree_primary.setToolTip("Columns of the Dataframe. Can be accessed\n"+
                                      "in the console with the variable 'df'")
-        #self.tree_primary.itemClicked.connect(self.onItemClicked)
+        self.tree_primary.itemClicked.connect(self.update_selected_primary)
         self.tree_secondary = QTreeCustomSecondary(parent=self)
         self.tree_secondary.setHeaderLabels(['Secondary Variables'])
         self.tree_secondary.setToolTip("Secondary variables, can be added to the Dataframe.\n"
                                        "Can be accessed in the console with the variable \n"+
                                        "'secondary_vars'")
-        #self.tree_secondary.itemClicked.connect(self.onItemClicked)
+        self.tree_secondary.itemClicked.connect(self.update_selected_secondary)
 
         self.df = pd.DataFrame(np.random.rand(100, 5), columns=['a', 'b', 'c', 'd', 'e'])
+        names = ['aa', 'bb', 'cc']
+        nm = [names[ind%3] for ind in np.arange(100)]
+        self.df['name'] = nm
         self.primary_names = list(self.df.keys())
         self.secondary_vars = {'var 3':np.zeros(100), 'var 4':np.zeros(100)}
         self.secondary_names = list(self.secondary_vars.keys())
@@ -206,7 +210,7 @@ class Application(QMainWindow):
         self.update_selected_primary()
         df = self.df[self.selected_primary]
         #Generate a dictionary of plotly plots
-        a = df.scatter_matrix(asFigure=True)
+        a = custom_scatter_matrix(df, groupby='name')
         #Saves html to temporary folder
         ptl_plot(a, filename=os.path.join(self.temp_dir,'scatter_matrix.html'), auto_open=False)
         self.refresh_tab2()
@@ -219,6 +223,16 @@ class Application(QMainWindow):
             item = self.iterator.value()
             if item.checkState(0) == 2: #full-box checked, add item to dictionary
                 self.selected_primary.append(item.text(0))
+            self.iterator += 1
+
+    def update_selected_secondary(self):
+        """Iterate over all nodes of the tree and save selected items names to list"""
+        self.selected_secondary = []
+        self.iterator = QTreeWidgetItemIterator(self.tree_secondary, QTreeWidgetItemIterator.All)
+        while self.iterator.value():
+            item = self.iterator.value()
+            if item.checkState(0) == 2: #full-box checked, add item to dictionary
+                self.selected_secondary.append(item.text(0))
             self.iterator += 1
 
     def closeEvent(self, event):

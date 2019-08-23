@@ -17,5 +17,6 @@ dependencies:
 - pandas-profiling
 - plotly
 - python-cufflinks
+- scikit-learn
 - pip:
   - -e .
