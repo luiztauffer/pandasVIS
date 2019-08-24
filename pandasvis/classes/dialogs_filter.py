@@ -20,6 +20,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         self.df = df
         self.value = -1
         self.all_operations = []
+        self.group_by = None
 
         self.comboBox_1.activated.connect(lambda: self.update_current_condition('cb1'))
         self.comboBox_2.activated.connect(lambda: self.update_current_condition('cb2'))
@@ -90,8 +91,11 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         aux['operand_1'] = self.txt1
         aux['type_1'] = 'variable'
         aux['operation'] = self.txt2
+        if self.txt2=='group by':
+            aux['type_2'] = 'str'
+        else:
+            aux['type_2'] = 'other'
         aux['operand_2'] = self.txt3
-        aux['type_2'] = 'other'
         self.all_operations.append(aux)
         #Add text
         curr_cond = self.textEdit_1.toPlainText()
@@ -103,6 +107,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
 
     def clear_conditions(self):
         self.textEdit_2.setText('')
+        self.all_operations = []
 
     def parse_conditions(self):
         nObs = self.df.shape[0]
@@ -114,8 +119,10 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
                 op1 = op['operand_1']
             if op['type_2'] == 'variable':
                 op2 = self.df[op['operand_2']]
-            else:
+            elif op['type_2'] == 'str':
                 op2 = op['operand_2']
+            else:
+                op2 = float(op['operand_2'])
             #Possible operations: ['group by', '==', '!=', '<', '>']
             if op['operation']=='group by':
                 self.group_by = op['operand_1']
@@ -131,8 +138,10 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
             elif op['operation']=='>':
                 aux = (op1 > op2).to_numpy()
                 mask = mask*aux
-        df = self.df[mask]
+        self.df = self.df[mask]
 
     def exit(self, val=-1):
         self.value = val
+        if val==1:
+            self.parse_conditions()
         self.accept()

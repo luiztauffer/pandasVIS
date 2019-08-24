@@ -1,17 +1,14 @@
 from plotly.offline import iplot
 import plotly.graph_objs as go
 from plotly import tools
-from cufflinks import auth
 from cufflinks.tools import *
 from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
 
-def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
+def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, groupby=None,
-                          asFigure=False, palette=None, **iplot_kwargs):
-    if not theme:
-    	theme = auth.get_config_file()['theme']
+                          palette=None, **iplot_kwargs):
 
     if palette is None:
         #Tableau10 scheme
@@ -68,10 +65,10 @@ def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
                             asFigure=True, bins=bins
                         )
                 elif j<i:   #Bi-variate scatter plot
-                    y1 = df_aux[i].to_numpy()
+                    y1 = df_aux[j].to_numpy()
                     Ym1 = np.min(y1)
                     YM1 = np.max(y1)
-                    y2 = df_aux[j].to_numpy()
+                    y2 = df_aux[i].to_numpy()
                     Ym2 = np.min(y2)
                     YM2 = np.max(y2)
                     fig = go.Scatter(
@@ -114,7 +111,7 @@ def custom_scatter_matrix(df, theme=None, bins=10, color='grey', size=2,
         figs.layout.update(legend=legend_layout)
         #Title
         title_layout = go.layout.Title(
-            text=['Grouped by '+groupby if groupby is not None else None][0],
+            text=['Grouped by: '+groupby if groupby is not None else None][0],
             xref="paper",
             x=0,
         )

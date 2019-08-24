@@ -214,7 +214,7 @@ class Application(QMainWindow):
         w = FilterVariablesDialog(self, df)
         if w.value==1:
             #Generate a dictionary of plotly plots
-            a = custom_scatter_matrix(df)#, groupby='name')
+            a = custom_scatter_matrix(w.df, groupby=w.group_by)
             #Saves html to temporary folder
             ptl_plot(a, filename=os.path.join(self.temp_dir,'scatter_matrix.html'), auto_open=False)
             self.refresh_tab2()
