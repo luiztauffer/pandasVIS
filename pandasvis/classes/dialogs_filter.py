@@ -22,12 +22,15 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         self.all_operations = []
         self.group_by = None
 
-        self.comboBox_1.activated.connect(lambda: self.update_current_condition('cb1'))
-        self.comboBox_2.activated.connect(lambda: self.update_current_condition('cb2'))
-        self.comboBox_3.activated.connect(lambda: self.update_current_condition('cb3'))
-        self.lineEdit_1.returnPressed.connect(lambda: self.update_current_condition('le1'))
-        self.lineEdit_2.returnPressed.connect(lambda: self.update_current_condition('le2'))
-        self.lineEdit_3.returnPressed.connect(lambda: self.update_current_condition('le3'))
+        self.comboBox_1.activated.connect(lambda: self.update_current_condition('rb1'))
+        self.comboBox_2.activated.connect(lambda: self.update_current_condition(None))
+        self.comboBox_3.activated.connect(lambda: self.update_current_condition('rb3'))
+        self.lineEdit_1.textChanged.connect(lambda: self.update_current_condition('rb2'))
+        self.lineEdit_3.textChanged.connect(lambda: self.update_current_condition('rb4'))
+        self.radioButton_1.clicked.connect(lambda: self.update_current_condition('rb1'))
+        self.radioButton_2.clicked.connect(lambda: self.update_current_condition('rb2'))
+        self.radioButton_3.clicked.connect(lambda: self.update_current_condition('rb3'))
+        self.radioButton_4.clicked.connect(lambda: self.update_current_condition('rb4'))
 
         self.pushButton_1.clicked.connect(self.add_condition)
         self.pushButton_2.clicked.connect(self.clear_conditions)
@@ -35,7 +38,6 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         self.pushButton_cancel.clicked.connect(lambda: self.exit(val=-1))
 
         self.init_dropdowns()
-
         self.exec_()
 
     def init_dropdowns(self):
@@ -46,41 +48,37 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         for var in vars:
             self.comboBox_1.addItem(var)
             self.comboBox_3.addItem(var)
+        self.groupBox_3.setEnabled(False)
 
     def update_current_condition(self, src=None):
         #Check source
-        if src == 'le1':
+        if src == 'rb1':
             self.radioButton_1.setChecked(True)
-        elif src == 'le2':
-            self.radioButton_3.setChecked(True)
-        elif src == 'le3':
-            self.radioButton_5.setChecked(True)
-        elif src == 'cb1':
+        elif src == 'rb2':
             self.radioButton_2.setChecked(True)
-        elif src == 'cb2':
+        elif src == 'rb3':
+            self.radioButton_3.setChecked(True)
+        elif src == 'rb4':
             self.radioButton_4.setChecked(True)
-        elif src == 'cb3':
-            self.radioButton_6.setChecked(True)
         #Operand 1
         if self.radioButton_1.isChecked():
-            txt1 = self.lineEdit_1.text()
-        else:
             txt1 = self.comboBox_1.currentText()
+        else:
+            txt1 = self.lineEdit_1.text()
         #Operation
-        if self.radioButton_3.isChecked():
-            txt2 = self.lineEdit_2.text()
-        else:
-            txt2 = self.comboBox_2.currentText()
+        txt2 = self.comboBox_2.currentText()
         #Operand 2
-        if self.radioButton_5.isChecked():
-            txt3 = self.lineEdit_3.text()
-        else:
+        if self.radioButton_3.isChecked():
             txt3 = self.comboBox_3.currentText()
+        else:
+            txt3 = self.lineEdit_3.text()
         #Write text for current chosen condition
         if txt2=='group by':
             self.textEdit_1.setText('group by '+txt1)
+            self.groupBox_3.setEnabled(False)
         else:
             self.textEdit_1.setText(txt1+' '+txt2+' '+txt3)
+            self.groupBox_3.setEnabled(True)
         self.txt1 = txt1
         self.txt2 = txt2
         self.txt3 = txt3

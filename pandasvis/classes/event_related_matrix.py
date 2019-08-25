@@ -1,15 +1,15 @@
 from plotly.offline import iplot
 import plotly.graph_objs as go
 from plotly import tools
-from cufflinks.tools import *
-from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
 
-def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
+def event_related_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, groupby=None,
                           palette=None, **iplot_kwargs):
-
+    """
+    Time series event related averages and
+    """
     if palette is None:
         #Tableau10 scheme
         palette = ["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949",
@@ -45,7 +45,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                     y = df_aux[i].to_numpy()
                     if hist_type=='kde':    #Gaussian KDE
                         if kde_width is None:
-                            bandwidth = 0.1*np.nanstd(y)/np.nanmean(y)
+                            bandwidth = 0.1*np.nanstd(y)/np.abs(np.nanmean(y))
                         Ym = np.min(df[i].to_numpy())
                         YM = np.max(df[i].to_numpy())
                         xx = np.linspace(Ym, YM, 200)
@@ -116,10 +116,6 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
             x=0,
         )
         figs.layout.update(title=title_layout)
-
-        #figs['layout']['xaxis1'].update(anchor='x2')
-        #figs['layout']['xaxis2'].update(anchor='x2')
-        #figs['layout']['xaxis3'].update(anchor='x2')
 
 
     return figs

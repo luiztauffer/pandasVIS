@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidget, QTreeWidgetItem
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
-from pandasvis.classes.cufflinks_subs import custom_scatter_matrix
+from pandasvis.classes.scatter_matrix import custom_scatter_matrix
 from pandasvis.classes.dialogs_filter import FilterVariablesDialog
 import numpy as np
 import pandas as pd
