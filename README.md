@@ -22,7 +22,7 @@ pip install git+https://github.com/luiztauffer/pandasVIS
 
 PandasVIS module can be imported and the GUI initialized with:
 ```python
-from pandas.main import main as pdvis
+from pandasvis.main import main as pdvis
 
 app = pdvis()
 ```
