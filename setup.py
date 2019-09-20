@@ -5,15 +5,15 @@ from setuptools import setup, find_packages
 with open('README.md', 'r') as f:
     long_description = f.read()
 
-setup(name = 'pandasVIS',
-      version = '0.0.1',
-      description = 'Tabular data exploration GUI.',
-      long_description = long_description,
-      long_description_content_type = 'text/markdown',
-      author = 'Luiz Tauffer',
-      email = 'luiz@taufferconsulting.com',
+setup(name='pandasVIS',
+      version='0.0.1',
+      description='Tabular data exploration GUI.',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
+      author='Luiz Tauffer',
+      email='luiz@taufferconsulting.com',
       packages=find_packages(),
-      include_package_data = True,
-      install_requires = ['pyqt', 'matplotlib', 'numpy', 'pandas', 'pandas-profiling',
-                          'pyqtgraph', 'plotly', 'cufflinks', 'scikit-learn'],
+      include_package_data=True,
+      install_requires=['PyQt5', 'matplotlib', 'numpy', 'pandas', 'pandas-profiling',
+                        'pyqtgraph', 'plotly', 'cufflinks', 'scikit-learn'],
       )

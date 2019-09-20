@@ -6,14 +6,15 @@ from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
 
+
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, groupby=None,
                           palette=None, **iplot_kwargs):
 
     if palette is None:
-        #Tableau10 scheme
-        palette = ["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949",
-                   "#af7aa1","#ff9da7","#9c755f","#bab0ab"]
+        # Tableau10 scheme
+        palette = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f",
+                   "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"]
 
     columns = df.columns.to_list()
     if groupby is not None:
@@ -23,10 +24,10 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
     else:
         groups_names = ['all']
 
-    #Remove non-numerical columns
+    # Remove non-numerical columns
     for col in columns:
         dtype = str(df[col].dtypes)
-        if not (dtype=='int64' or dtype=='float64'):
+        if not (dtype == 'int64' or dtype == 'float64'):
             columns.remove(col)
 
     nVars = len(columns)
@@ -41,9 +42,9 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
         for ci, i in enumerate(columns):
             for cj, j in enumerate(columns):
                 ii += 1
-                if i==j:  #Univariate distribution
+                if i == j:   # univariate distribution
                     y = df_aux[i].to_numpy()
-                    if hist_type=='kde':    #Gaussian KDE
+                    if hist_type == 'kde':    # Gaussian KDE
                         if kde_width is None:
                             bandwidth = 0.1*np.nanstd(y)/np.abs(np.nanmean(y))
                         Ym = np.min(df[i].to_numpy())
@@ -57,14 +58,14 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                             line=dict(color=palette[cgrp], width=1),
                             legendgroup=grp,
                             name=grp,
-                            showlegend=[True if ((ci==0) and (cj==0)) else False][0],
+                            showlegend=[True if ((ci == 0) and (cj == 0)) else False][0],
                         )
-                    elif hist_type=='hist':    #Histogram
+                    elif hist_type == 'hist':    # histogram
                         fig = df_aux.iplot(
                             kind='histogram', keys=[i],
                             asFigure=True, bins=bins
                         )
-                elif j<i:   #Bi-variate scatter plot
+                elif j < i:    # bi-variate scatter plot
                     y1 = df_aux[j].to_numpy()
                     Ym1 = np.min(y1)
                     YM1 = np.max(y1)
@@ -83,7 +84,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                         legendgroup=grp,
                         name=grp,
                         showlegend=False,
-                        #xaxis='x'+str(ii),
+                        # xaxis='x'+str(ii),
                         yaxis='y'+str(ii),
                     )
                 else:
@@ -99,17 +100,17 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                         showline=False,
                         showgrid=False
                     )
-                #Y labels
-                if cj==0:
+                # Y labels
+                if cj == 0:
                     figs['layout']['yaxis'+str(ii+1)].update(title=i)
                 figs.append_trace(fig, ci+1, cj+1)
 
-        #Legend
+        # Legend
         legend_layout = go.layout.Legend(
             font=dict(size=15, color="black"),
         )
         figs.layout.update(legend=legend_layout)
-        #Title
+        # Title
         title_layout = go.layout.Title(
             text=['Grouped by: '+groupby if groupby is not None else None][0],
             xref="paper",
@@ -117,9 +118,8 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
         )
         figs.layout.update(title=title_layout)
 
-        #figs['layout']['xaxis1'].update(anchor='x2')
-        #figs['layout']['xaxis2'].update(anchor='x2')
-        #figs['layout']['xaxis3'].update(anchor='x2')
-
+        # figs['layout']['xaxis1'].update(anchor='x2')
+        # figs['layout']['xaxis2'].update(anchor='x2')
+        # figs['layout']['xaxis3'].update(anchor='x2')
 
     return figs

@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, Qt
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 
+
 class QTreeCustomPrimary(QTreeWidget):
     def __init__(self, parent):
         QTreeWidget.__init__(self, parent)
@@ -13,7 +14,7 @@ class QTreeCustomPrimary(QTreeWidget):
         index = self.indexAt(event)
         if index.isValid():
             item = self.itemAt(event)
-            name = item.text(0)  #The text of the node
+            name = item.text(0)   # the text of the node
             self.contextMenu1(name=name, event=event)
         else:
             name = None
@@ -62,7 +63,7 @@ class QTreeCustomSecondary(QTreeWidget):
         index = self.indexAt(event)
         if index.isValid():
             item = self.itemAt(event)
-            name = item.text(0)  #The text of the node
+            name = item.text(0)   # the text of the node
             self.contextMenu1(name=name, event=event)
         else:
             name = None
@@ -93,19 +94,18 @@ class QTreeCustomSecondary(QTreeWidget):
                 print('')
 
 
-
-
 def move_to_secondary(parent, name):
     """Moves a variable from Primary to Secondary list of variables. Removes it from df."""
     parent.secondary_vars[name] = parent.df[name].to_list()
     parent.secondary_names = list(parent.secondary_vars.keys())
     parent.df.drop(name, axis=1, inplace=True)
     parent.primary_names = parent.df.keys().tolist()
-    #update df and secondary_vars on console
-    parent.console.push_vars({'df':parent.df})
-    parent.console.push_vars({'secondary_vars':parent.secondary_vars})
-    #update trees
+    # Update df and secondary_vars on console
+    parent.console.push_vars({'df': parent.df})
+    parent.console.push_vars({'secondary_vars': parent.secondary_vars})
+    # Update trees
     parent.init_trees()
+
 
 def move_to_primary(parent, name):
     """Moves a variable from Secondary to Primary list of variables. Adds it to df."""
@@ -114,11 +114,11 @@ def move_to_primary(parent, name):
         parent.primary_names = parent.df.keys().tolist()
         del parent.secondary_vars[name]
         parent.secondary_names = list(parent.secondary_vars.keys())
-        #update df and secondary_vars on console
-        parent.console.push_vars({'df':parent.df})
-        parent.console.push_vars({'secondary_vars':parent.secondary_vars})
-        #update trees
+        # Update df and secondary_vars on console
+        parent.console.push_vars({'df': parent.df})
+        parent.console.push_vars({'secondary_vars': parent.secondary_vars})
+        # Update trees
         parent.init_trees()
     else:
-        #TO-DO needs to raise a popup warning in the future
+        # TO-DO needs to raise a popup warning in the future
         print('Variable of different length from df')

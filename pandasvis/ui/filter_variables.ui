@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>584</width>
-    <height>495</height>
+    <width>551</width>
+    <height>507</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>170</y>
-     <width>561</width>
+     <y>190</y>
+     <width>531</width>
      <height>31</height>
     </rect>
    </property>
@@ -34,7 +34,7 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>220</y>
+     <y>240</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -47,8 +47,8 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>270</y>
-     <width>561</width>
+     <y>290</y>
+     <width>531</width>
      <height>151</height>
     </rect>
    </property>
@@ -64,36 +64,30 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>40</y>
-     <width>181</width>
+     <y>70</y>
+     <width>531</width>
      <height>111</height>
     </rect>
    </property>
    <property name="title">
-    <string>Operand 1</string>
+    <string>Operation</string>
    </property>
-   <widget class="QRadioButton" name="radioButton_1">
+   <widget class="QComboBox" name="comboBox_1">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>21</width>
-      <height>20</height>
+      <width>131</width>
+      <height>22</height>
      </rect>
     </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_1">
+   <widget class="QComboBox" name="comboBox_2">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>170</x>
       <y>30</y>
-      <width>131</width>
+      <width>161</width>
       <height>22</height>
      </rect>
     </property>
@@ -101,8 +95,18 @@ p, li { white-space: pre-wrap; }
    <widget class="QLineEdit" name="lineEdit_1">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>390</x>
       <y>70</y>
+      <width>131</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_3">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>30</y>
       <width>131</width>
       <height>22</height>
      </rect>
@@ -111,7 +115,7 @@ p, li { white-space: pre-wrap; }
    <widget class="QRadioButton" name="radioButton_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>360</x>
       <y>70</y>
       <width>21</width>
       <height>20</height>
@@ -124,46 +128,10 @@ p, li { white-space: pre-wrap; }
      <bool>false</bool>
     </property>
    </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_2">
-   <property name="geometry">
-    <rect>
-     <x>200</x>
-     <y>40</y>
-     <width>181</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Operation</string>
-   </property>
-   <widget class="QComboBox" name="comboBox_2">
+   <widget class="QRadioButton" name="radioButton_1">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>161</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-  </widget>
-  <widget class="QGroupBox" name="groupBox_3">
-   <property name="geometry">
-    <rect>
-     <x>390</x>
-     <y>40</y>
-     <width>181</width>
-     <height>111</height>
-    </rect>
-   </property>
-   <property name="title">
-    <string>Operand 2</string>
-   </property>
-   <widget class="QRadioButton" name="radioButton_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
+      <x>360</x>
       <y>30</y>
       <width>21</width>
       <height>20</height>
@@ -176,48 +144,12 @@ p, li { white-space: pre-wrap; }
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_3">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>30</y>
-      <width>131</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_3">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>70</y>
-      <width>131</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QRadioButton" name="radioButton_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>21</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-    <property name="checked">
-     <bool>false</bool>
-    </property>
-   </widget>
   </widget>
   <widget class="QPushButton" name="pushButton_accept">
    <property name="geometry">
     <rect>
-     <x>170</x>
-     <y>450</y>
+     <x>160</x>
+     <y>460</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -229,8 +161,8 @@ p, li { white-space: pre-wrap; }
   <widget class="QPushButton" name="pushButton_cancel">
    <property name="geometry">
     <rect>
-     <x>300</x>
-     <y>450</y>
+     <x>290</x>
+     <y>460</y>
      <width>93</width>
      <height>28</height>
     </rect>
@@ -243,13 +175,36 @@ p, li { white-space: pre-wrap; }
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>220</y>
+     <y>240</y>
      <width>93</width>
      <height>28</height>
     </rect>
    </property>
    <property name="text">
     <string>Clear</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBox_0">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>30</y>
+     <width>131</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>30</y>
+     <width>55</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Group by:</string>
    </property>
   </widget>
  </widget>
