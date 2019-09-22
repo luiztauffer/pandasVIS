@@ -12,7 +12,7 @@ ui_path = os.path.join(os.path.dirname(__file__), '..', 'ui')
 # Filter variables dialog ------------------------------------------------------
 Ui_FilterVars, _ = uic.loadUiType(os.path.join(ui_path, "filter_variables.ui"))
 class FilterVariablesDialog(QDialog, Ui_FilterVars):
-    def __init__(self, parent, df):
+    def __init__(self, parent, df, force_group_by=False):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Add filters')
@@ -21,6 +21,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         self.value = -1
         self.all_operations = []
         self.group_by = None
+        self.force_group_by = force_group_by
 
         self.comboBox_0.activated.connect(lambda: self.update_current_condition('cb0'))
         self.comboBox_1.activated.connect(lambda: self.update_current_condition(None))
@@ -43,7 +44,8 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         for op in operations:
             self.comboBox_2.addItem(op)
         vars = list(self.df.columns)
-        self.comboBox_0.addItem('None')
+        if not self.force_group_by:
+            self.comboBox_0.addItem('None')
         for var in vars:
             if self.df[var].dtype.name in ['object', 'bool', 'category']:
                 self.comboBox_0.addItem(var)

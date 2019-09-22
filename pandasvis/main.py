@@ -14,9 +14,6 @@ import pandas_profiling
 import os
 import sys
 import shutil
-from plotly.offline import plot as ptl_plot
-import cufflinks as cf
-cf.go_offline()
 
 
 class Application(QMainWindow):
@@ -140,7 +137,7 @@ class Application(QMainWindow):
     def load_modules(self):
         modules_list = load_all_modules()
         for module in modules_list:
-            action = QAction('Scatter Matrix', self)
+            action = QAction(module.menu_name, self)
             action.triggered.connect(lambda: module.make_object(self))
             if module.menu_parent == 'Tabular':
                 self.tabularMenu.addAction(action)

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from pandasvis.dialogs.dialogs_filter import FilterVariablesDialog
+from pandasvis.dialogs.filter_variables import FilterVariablesDialog
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
@@ -21,15 +21,15 @@ class ScatterMatrix(QWidget):
         self.parent = parent
         self.name = "Scatter Matrix"
 
-        self.scatter_matrix = QWebEngineView()
+        self.module = QWebEngineView()
         self.vbox = QVBoxLayout()
-        self.vbox.addWidget(self.scatter_matrix)
+        self.vbox.addWidget(self.module)
         self.setLayout(self.vbox)
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
-        self.scatter_matrix.load(url)
-        self.scatter_matrix.show()
+        self.module.load(url)
+        self.module.show()
 
     @staticmethod
     def make_object(parent):
@@ -42,20 +42,20 @@ class ScatterMatrix(QWidget):
         w = FilterVariablesDialog(parent, df)
         if w.value == 1:
             # Generate a dictionary of plotly plots
-            sm = custom_scatter_matrix(w.df, groupby=w.group_by)
+            sm = custom_scatter_matrix(w.df, group_by=w.group_by)
             # Saves html to temporary folder
             plt_plot(figure_or_data=sm,
-                     filename=os.path.join(parent.temp_dir, 'scatter_matrix.html'),
+                     filename=os.path.join(parent.temp_dir, obj.name+'.html'),
                      auto_open=False)
             # Load scatter matrix html on object
-            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, 'scatter_matrix.html'))
+            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
             obj.update_html(url=url)
             # Makes new tab on parent and load it with new object
             parent.new_tab_top(obj, obj.name)
 
 
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
-                          hist_type='kde', kde_width=None, groupby=None,
+                          hist_type='kde', kde_width=None, group_by=None,
                           palette=None, **iplot_kwargs):
     if palette is None:
         # Tableau10 scheme
@@ -63,10 +63,10 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                    "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"]
 
     columns = df.columns.to_list()
-    if groupby is not None:
-        grouped = df.groupby(groupby)
+    if group_by is not None:
+        grouped = df.groupby(group_by)
         groups_names = list(grouped.groups.keys())
-        columns.remove(groupby)
+        columns.remove(group_by)
     else:
         groups_names = ['all']
 

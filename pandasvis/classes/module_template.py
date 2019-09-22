@@ -35,7 +35,7 @@ class ModuleTemplate(QWidget):
         my_module_processing(df=df)
         # Load html to object
         url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, 'just_created.html'))
-        obj.update_scatter(url=url)
+        obj.update_html(url=url)
         # Makes new tab on parent and load it with new object
         parent.new_tab_top(obj, obj.name)
 
