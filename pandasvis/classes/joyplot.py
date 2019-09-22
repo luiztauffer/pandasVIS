@@ -96,8 +96,7 @@ def make_joyplot(df, group_by, x_var, hist_type='kde', kde_width=None):
           "type": "scatter",
           "x": xx.tolist(),
           "y": (yy_base + yy).tolist(),
-          "fillcolor": "rgba(222, 34, 36, 0.8)",
-          "hoverinfo": "text"
+          "fillcolor": "rgba(96, 109, 138, 0.8)",
         }
         trace_list.append(trace_base)
         trace_list.append(trace_pdf)
@@ -118,7 +117,6 @@ def make_joyplot(df, group_by, x_var, hist_type='kde', kde_width=None):
       },
       "yaxis": {
         "type": "linear",
-        #"range": [0, 3],
         "ticklen": 4,
         "showgrid": True,
         "showline": False,
@@ -128,12 +126,9 @@ def make_joyplot(df, group_by, x_var, hist_type='kde', kde_width=None):
         "gridcolor": "rgb(255,255,255)",
         "gridwidth": 1
       },
-      #"width": 550,
-      #"height": 475,
-      #"autosize": False,
       "hovermode": "closest",
       "showlegend": False,
-      "plot_bgcolor": "rgb(240,240,240)"
+      "plot_bgcolor": "rgb(255,255,255)"
     }
 
     fig = go.Figure(data=data, layout=layout)
