@@ -3,12 +3,11 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem,
                              QMainWindow, QFileDialog, QAction, QVBoxLayout,
                              QGridLayout, QPushButton, QTreeWidgetItemIterator,
-                             QTabWidget, QSplitter)
+                             QTabWidget, QSplitter, QTextEdit, QMessageBox)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from pandasvis.classes.QTreeCustom import QTreeCustomPrimary, QTreeCustomSecondary
+from pandasvis.classes.trees import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
-from pandasvis.classes.scatter_matrix import custom_scatter_matrix
-from pandasvis.classes.dialogs_filter import FilterVariablesDialog
+from pandasvis.utils.load_all_modules import load_all_modules
 import numpy as np
 import pandas as pd
 import pandas_profiling
@@ -54,26 +53,23 @@ class Application(QMainWindow):
         fileMenu.addAction(action_open_file)
         action_open_file.triggered.connect(lambda: self.open_file(None))
 
-        toolsMenu = mainMenu.addMenu('Tools')
-        action_func1 = QAction('Func 1', self)
-        toolsMenu.addAction(action_func1)
-        #action_load_annotations.triggered.connect(self.load_annotations)
-        action_func2 = QAction('Func 2', self)
-        toolsMenu.addAction(action_func2)
-        #action_load_intervals.triggered.connect(self.load_intervals)
+        self.toolsMenu = mainMenu.addMenu('Tools')
+        action_profile = QAction('Profile', self)
+        self.toolsMenu.addAction(action_profile)
+        action_profile.triggered.connect(lambda: self.refresh_profile())
+        self.tabularMenu = self.toolsMenu.addMenu('Tabular')
+        self.timeseriesMenu = self.toolsMenu.addMenu('Time Series')
+        self.load_modules()
 
         helpMenu = mainMenu.addMenu('Help')
         action_about = QAction('About', self)
         helpMenu.addAction(action_about)
-        #action_about.triggered.connect(self.about)
+        action_about.triggered.connect(self.about)
 
         # Left panels ----------------------------------------------------------
         self.bt_refreshOverview = QPushButton('Overview')
-        self.bt_refreshOverview.clicked.connect(lambda: self.refresh_overview())
+        self.bt_refreshOverview.clicked.connect(lambda: self.test())
         self.bt_refreshOverview.setToolTip("Refresh Overview")
-        self.bt_scatterMatrix = QPushButton('Scatter matrix')
-        self.bt_scatterMatrix.clicked.connect(lambda: self.make_scatter_matrix())
-        self.bt_scatterMatrix.setToolTip("Scatter matrix for\nselected variables")
 
         self.tree_primary = QTreeCustomPrimary(parent=self)
         self.tree_primary.setHeaderLabels(['Primary Variables'])
@@ -102,42 +98,54 @@ class Application(QMainWindow):
 
         self.grid_left1 = QGridLayout()
         self.grid_left1.addWidget(self.bt_refreshOverview, 0, 0, 1, 3)
-        self.grid_left1.addWidget(self.bt_scatterMatrix, 0, 3, 1, 3)
         self.grid_left1.addWidget(self.vbox1, 1, 0, 1, 6)
         self.left_widget = QWidget()
         self.left_widget.setLayout(self.grid_left1)
 
         # Center panels -------------------------------------------------------
-        self.tabs = QTabWidget()
+        # Top tabs
+        self.tabs_top = QTabWidget()
         self.tab1 = QWidget()
-        self.tab2 = QWidget()
-        self.tabs.addTab(self.tab1, "Overview")
-        self.tabs.addTab(self.tab2, "Scatter matrix")
-        # Create first tab
-        self.tab1.layout = QVBoxLayout()
-        self.webview = QWebEngineView()
-        self.tab1.layout.addWidget(self.webview)
-        self.tab1.setLayout(self.tab1.layout)
-        # Create second tab
-        self.tab2.layout = QVBoxLayout()
-        self.scatter_matrix = QWebEngineView()
-        self.tab2.layout.addWidget(self.scatter_matrix)
-        self.tab2.setLayout(self.tab2.layout)
+        self.tabs_top.addTab(self.tab1, "Profile")
+        # Create Profile tab
+        self.profile_layout = QVBoxLayout()
+        self.profile = QWebEngineView()
+        self.profile_layout.addWidget(self.profile)
+        self.tab1.setLayout(self.profile_layout)
 
+        # Bottom tabs
+        self.tabs_bottom = QTabWidget()
         self.console = ConsoleWidget(par=self)
         self.console.setToolTip(
             "df --> Dataframe with Primary variables\n"
             "secondary_vars --> Dictionary with Secondary variables")
+        self.logger = QTextEdit()
+        self.logger.setReadOnly(True)
+        self.tabs_bottom.addTab(self.console, "Console")
+        self.tabs_bottom.addTab(self.logger, "Logger")
 
         self.righ_widget = QSplitter(Qt.Vertical)
-        self.righ_widget.addWidget(self.tabs)
-        self.righ_widget.addWidget(self.console)
+        self.righ_widget.addWidget(self.tabs_top)
+        self.righ_widget.addWidget(self.tabs_bottom)
 
         # Window layout --------------------------------------------------------
         self.hbox = QSplitter(Qt.Horizontal)
         self.hbox.addWidget(self.left_widget)     # add left panel
         self.hbox.addWidget(self.righ_widget)     # add centre panel
         self.setCentralWidget(self.hbox)
+
+    def test(self):
+        pass
+
+    def load_modules(self):
+        modules_list = load_all_modules()
+        for module in modules_list:
+            action = QAction('Scatter Matrix', self)
+            action.triggered.connect(lambda: module.make_object(self))
+            if module.menu_parent == 'Tabular':
+                self.tabularMenu.addAction(action)
+            elif module.menu_parent == 'Time Series':
+                self.timeseriesMenu.addAction(action)
 
     def open_file(self, filename):
         ''' Open file and store it as a Pandas Dataframe.'''
@@ -158,8 +166,6 @@ class Application(QMainWindow):
             # Reset GUI
             self.init_trees()
             self.init_console()
-            self.refresh_tab1()
-            self.refresh_tab2()
 
     def init_trees(self):
         ''' Draw hierarchical tree of fields in NWB file '''
@@ -186,40 +192,29 @@ class Application(QMainWindow):
         self.console.print_text('df --> Dataframe with Primary variables\n')
         self.console.print_text('secondary_vars --> Dictionary with Secondary variables\n\n')
 
-    def refresh_tab1(self):
-        """Loads temporary HTML file and render it at tab 1"""
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir, 'summary_report.html'))
-        self.webview.load(url)
-        self.webview.show()
-        self.tabs.setCurrentIndex(0)
+    def new_tab_top(self, object, title):
+        """Opens new tab."""
+        layout = QVBoxLayout()
+        layout.addWidget(object)
+        tab = QWidget()
+        tab.setLayout(layout)
+        self.tabs_top.addTab(tab, title)
+        nTabs = len(self.tabs_top.children())
+        self.tabs_top.setCurrentIndex(nTabs-1)
 
-    def refresh_overview(self):
+    def new_tab_bottom(self, tab_object, title):
+        """Opens new tab."""
+        self.tabs_bottom.addTab(tab_object, title)
+
+    def refresh_profile(self):
         """Produces new profile overview with current df"""
         self.primary_names = self.df.keys().tolist()
         self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
         self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
-        self.refresh_tab1()
-
-    def refresh_tab2(self):
-        """Loads temporary HTML file and render it at tab 2"""
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir, 'scatter_matrix.html'))
-        self.scatter_matrix.load(url)
-        self.scatter_matrix.show()
-        self.tabs.setCurrentIndex(1)
-
-    def make_scatter_matrix(self):
-        """Produces new scatter matrix plot with selected variables"""
-        # Select variables from Dataframe
-        self.update_selected_primary()
-        df = self.df[self.selected_primary]
-        # Open filter by condition dialog
-        w = FilterVariablesDialog(self, df)
-        if w.value == 1:
-            # Generate a dictionary of plotly plots
-            a = custom_scatter_matrix(w.df, groupby=w.group_by)
-            # Saves html to temporary folder
-            ptl_plot(a, filename=os.path.join(self.temp_dir, 'scatter_matrix.html'), auto_open=False)
-            self.refresh_tab2()
+        url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir, 'summary_report.html'))
+        self.profile.load(url)
+        self.profile.show()
+        self.tabs_top.setCurrentIndex(0)
 
     def update_selected_primary(self):
         """Iterate over all nodes of the tree and save selected items names to list"""
@@ -245,6 +240,17 @@ class Application(QMainWindow):
         """Before exiting, deletes temporary files."""
         shutil.rmtree(self.temp_dir, ignore_errors=False, onerror=None)
         event.accept()
+
+    def about(self):
+        """About dialog."""
+        msg = QMessageBox()
+        msg.setWindowTitle("About PandasVIS")
+        msg.setIcon(QMessageBox.Information)
+        msg.setText("Version: 1.0.0 \n"
+                    "Data exploration GUI, with Data Science and Machine Learning embedded tools.\n ")
+        msg.setInformativeText("<a href='https://github.com/luiztauffer/pandasVIS'>PandasVIS Github page</a>")
+        msg.setStandardButtons(QMessageBox.Ok)
+        msg.exec_()
 
 
 if __name__ == '__main__':

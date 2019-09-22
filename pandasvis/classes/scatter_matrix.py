@@ -1,16 +1,64 @@
-from plotly.offline import iplot
+from PyQt5 import QtCore
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from pandasvis.dialogs.dialogs_filter import FilterVariablesDialog
+from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
-from cufflinks.tools import *
 from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
+import os
+
+
+class ScatterMatrix(QWidget):
+    menu_parent = "Tabular"
+    menu_name = "Scatter Matrix"
+
+    def __init__(self, parent):
+        """Describe this class"""
+        super().__init__()
+        self.parent = parent
+        self.name = "Scatter Matrix"
+
+        self.scatter_matrix = QWebEngineView()
+        self.vbox = QVBoxLayout()
+        self.vbox.addWidget(self.scatter_matrix)
+        self.setLayout(self.vbox)
+
+    def make_tab(self):
+        """Loads temporary HTML file and render it at tab 2"""
+        url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir, 'scatter_matrix.html'))
+        self.scatter_matrix.load(url)
+        self.scatter_matrix.show()
+        self.parent.tabs_top.setCurrentIndex(1)
+
+    @staticmethod
+    def make_object(parent):
+        """Produces new scatter matrix plot with selected variables"""
+        obj = ScatterMatrix(parent)
+        # Select variables from Dataframe
+        parent.update_selected_primary()
+        df = parent.df[parent.selected_primary]
+        # Open filter by condition dialog
+        w = FilterVariablesDialog(parent, df)
+        if w.value == 1:
+            # Generate a dictionary of plotly plots
+            sm = custom_scatter_matrix(w.df, groupby=w.group_by)
+            # Saves html to temporary folder
+            plt_plot(figure_or_data=sm,
+                     filename=os.path.join(parent.temp_dir, 'scatter_matrix.html'),
+                     auto_open=False)
+            # Makes new tab on parent and load it with new object
+            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, 'scatter_matrix.html'))
+            obj.scatter_matrix.load(url)
+            obj.scatter_matrix.show()
+            parent.new_tab_top(obj, obj.name)
 
 
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, groupby=None,
                           palette=None, **iplot_kwargs):
-
     if palette is None:
         # Tableau10 scheme
         palette = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f",

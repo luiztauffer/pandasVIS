@@ -1,5 +1,5 @@
-from PyQt5 import QtCore, QtGui, Qt
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtWidgets import QTreeWidget, QMenu
 
 
 class QTreeCustomPrimary(QTreeWidget):
@@ -37,17 +37,17 @@ class QTreeCustomPrimary(QTreeWidget):
         action = self.menu.exec_(self.mapToGlobal(event))
 
         if action is not None:
-            if action.text()=='Summary':
+            if action.text() == 'Summary':
                 print('')
-            if action.text()=='Set as Index':
+            if action.text() == 'Set as Index':
                 print('')
-            if action.text()=='Transform':
+            if action.text() == 'Transform':
                 print('')
-            if action.text()=='Group-by':
+            if action.text() == 'Group-by':
                 print('')
-            if action.text()=='Move to Secondary':
+            if action.text() == 'Move to Secondary':
                 move_to_secondary(parent=self.parent, name=name)
-            if action.text()=='Delete':
+            if action.text() == 'Delete':
                 print('')
 
 
@@ -84,13 +84,13 @@ class QTreeCustomSecondary(QTreeWidget):
         action = self.menu.exec_(self.mapToGlobal(event))
 
         if action is not None:
-            if action.text()=='Summary':
+            if action.text() == 'Summary':
                 print('')
-            if action.text()=='Transform':
+            if action.text() == 'Transform':
                 print('')
-            if action.text()=='Move to Primary':
+            if action.text() == 'Move to Primary':
                 move_to_primary(parent=self.parent, name=name)
-            if action.text()=='Delete':
+            if action.text() == 'Delete':
                 print('')
 
 

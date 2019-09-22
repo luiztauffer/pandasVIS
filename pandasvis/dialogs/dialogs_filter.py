@@ -106,7 +106,6 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         nObs = self.df.shape[0]
         mask = np.full(nObs, True)
         for op in self.all_operations:
-            print(op)
             # Test type of variable 1
             if op['type_1'] == 'variable':
                 op1 = self.df[op['operand_1']]
