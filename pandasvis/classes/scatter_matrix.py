@@ -16,7 +16,7 @@ class ScatterMatrix(QWidget):
     menu_name = "Scatter Matrix"
 
     def __init__(self, parent):
-        """Describe this class"""
+        """Produces a scatter matrix plot with selected variables."""
         super().__init__()
         self.parent = parent
         self.name = "Scatter Matrix"
@@ -26,16 +26,14 @@ class ScatterMatrix(QWidget):
         self.vbox.addWidget(self.scatter_matrix)
         self.setLayout(self.vbox)
 
-    def make_tab(self):
-        """Loads temporary HTML file and render it at tab 2"""
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir, 'scatter_matrix.html'))
+    def update_html(self, url):
+        """Loads temporary HTML file and render it."""
         self.scatter_matrix.load(url)
         self.scatter_matrix.show()
-        self.parent.tabs_top.setCurrentIndex(1)
 
     @staticmethod
     def make_object(parent):
-        """Produces new scatter matrix plot with selected variables"""
+        """Makes object to be placed in new tab."""
         obj = ScatterMatrix(parent)
         # Select variables from Dataframe
         parent.update_selected_primary()
@@ -49,10 +47,10 @@ class ScatterMatrix(QWidget):
             plt_plot(figure_or_data=sm,
                      filename=os.path.join(parent.temp_dir, 'scatter_matrix.html'),
                      auto_open=False)
-            # Makes new tab on parent and load it with new object
+            # Load scatter matrix html on object
             url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, 'scatter_matrix.html'))
-            obj.scatter_matrix.load(url)
-            obj.scatter_matrix.show()
+            obj.update_html(url=url)
+            # Makes new tab on parent and load it with new object
             parent.new_tab_top(obj, obj.name)
 
 
