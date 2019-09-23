@@ -97,11 +97,13 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
                 grouped_2 = df_aux.groupby(group_by)
                 groups_names_2 = list(grouped_2.groups.keys())
             else:
-                grouped_2 = 2
-
+                groups_names_2 = ['NA']
             for jj, grp_2 in enumerate(groups_names_2):
-                df_aux_2 = grouped_2.get_group(grp_2)
-
+                if len(groups_names_2) == 1:
+                    df_aux_2 = df_aux
+                    grp_2 = grp
+                else:
+                    df_aux_2 = grouped_2.get_group(grp_2)
                 y = df_aux_2[x_var].to_numpy()
                 kde = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(y.reshape(-1, 1))
                 log_dens = kde.score_samples(xx.reshape(-1, 1))
