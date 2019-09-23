@@ -127,6 +127,8 @@ class JoyplotFilterDialog(QDialog, Ui_Filter):
         self.df = self.df[mask]
         self.y_groups = self.comboBox_ygroups.currentText()
         self.group_by = self.comboBox_groupby.currentText()
+        if self.group_by == 'None':
+            self.group_by = None
 
     def exit(self, val=-1):
         self.value = val
