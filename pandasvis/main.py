@@ -84,6 +84,9 @@ class Application(QMainWindow):
         names = ['aa', 'bb', 'cc']
         nm = [names[ind % 3] for ind in np.arange(100)]
         self.df['name'] = nm
+        names_2 = ['abcd', 'ab789', 'another_class', 'yet_another', 'dfg65']
+        nm_2 = [names_2[ind % 5] for ind in np.arange(100)]
+        self.df['name_2'] = nm_2
         self.primary_names = list(self.df.keys())
         self.secondary_vars = {'var 3': np.zeros(100), 'var 4': np.zeros(100)}
         self.secondary_names = list(self.secondary_vars.keys())
