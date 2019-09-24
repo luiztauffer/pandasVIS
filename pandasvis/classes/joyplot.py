@@ -50,11 +50,11 @@ class Joyplot(QWidget):
             plt_plot(figure_or_data=jp,
                      filename=os.path.join(parent.temp_dir, obj.name+'.html'),
                      auto_open=False)
-        # Load html to object
-        url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
-        obj.update_html(url=url)
-        # Makes new tab on parent and load it with new object
-        parent.new_tab_top(obj, obj.name)
+            # Load html to object
+            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
+            obj.update_html(url=url)
+            # Makes new tab on parent and load it with new object
+            parent.new_tab_top(obj, obj.name)
 
 
 def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
