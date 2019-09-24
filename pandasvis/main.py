@@ -38,6 +38,7 @@ class Application(QMainWindow):
             os.makedirs(self.temp_dir, exist_ok=True)
 
         self.init_console()
+        self.console.push_vars({'self': self})
         self.show()
 
     def init_gui(self):
@@ -138,10 +139,10 @@ class Application(QMainWindow):
         pass
 
     def load_modules(self):
-        modules_list = load_all_modules()
-        for module in modules_list:
+        self.modules_list = load_all_modules()
+        for i, module in enumerate(self.modules_list):
             action = QAction(module.menu_name, self)
-            action.triggered.connect(lambda: module.make_object(self))
+            action.triggered.connect(lambda: self.modules_list[i].make_object(self))
             if module.menu_parent == 'Tabular':
                 self.tabularMenu.addAction(action)
             elif module.menu_parent == 'Time Series':
@@ -199,7 +200,7 @@ class Application(QMainWindow):
         tab = QWidget()
         tab.setLayout(layout)
         self.tabs_top.addTab(tab, title)
-        nTabs = len(self.tabs_top.children())
+        nTabs = self.tabs_top.children()[0].count()
         self.tabs_top.setCurrentIndex(nTabs-1)
 
     def new_tab_bottom(self, tab_object, title):

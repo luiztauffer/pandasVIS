@@ -23,6 +23,7 @@ class JoyplotFilterDialog(QDialog, Ui_Filter):
         self.group_by = None
         self.y_groups = None
 
+        self.comboBox_ygroups.activated.connect(self.update_groupby_combo)
         self.comboBox_1.activated.connect(lambda: self.update_current_condition(None))
         self.comboBox_2.activated.connect(lambda: self.update_current_condition(None))
         self.comboBox_3.activated.connect(lambda: self.update_current_condition('rb1'))
@@ -35,21 +36,30 @@ class JoyplotFilterDialog(QDialog, Ui_Filter):
         self.pushButton_accept.clicked.connect(lambda: self.exit(val=1))
         self.pushButton_cancel.clicked.connect(lambda: self.exit(val=-1))
 
-        self.init_dropdowns()
+        self.init_combos()
         self.exec_()
 
-    def init_dropdowns(self):
+    def init_combos(self):
         operations = ['==', '!=', '<', '>']
         for op in operations:
             self.comboBox_2.addItem(op)
         vars = list(self.df.columns)
-        self.comboBox_groupby.addItem('None')
         for var in vars:
             if self.df[var].dtype.name in ['object', 'bool', 'category']:
                 self.comboBox_ygroups.addItem(var)
-                self.comboBox_groupby.addItem(var)
             self.comboBox_1.addItem(var)
             self.comboBox_3.addItem(var)
+        self.update_groupby_combo()
+
+    def update_groupby_combo(self):
+        self.comboBox_groupby.clear()
+        ygroup = self.comboBox_ygroups.currentText()
+        vars = list(self.df.columns)
+        self.comboBox_groupby.addItem('None')
+        for var in vars:
+            if self.df[var].dtype.name in ['object', 'bool', 'category']:
+                if var != ygroup:
+                    self.comboBox_groupby.addItem(var)
 
     def update_current_condition(self, src=None):
         # Check source

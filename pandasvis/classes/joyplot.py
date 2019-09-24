@@ -45,9 +45,6 @@ class Joyplot(QWidget):
             jp = make_joyplot(df=w.df,
                               y_groups=w.y_groups,
                               group_by=w.group_by)
-
-            parent.console.push_vars({'jp': jp})
-
             # Saves html to temporary folder
             plt_plot(figure_or_data=jp,
                      filename=os.path.join(parent.temp_dir, obj.name+'.html'),
@@ -82,12 +79,16 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
     else:
         figs = tools.make_subplots(rows=1, cols=1, print_grid=False)
 
+    # Iterations to generate curves and estimate best separation distances
+    yy = AutoDictionary()
+    y_peaks = AutoDictionary()
     grouped = df.groupby(y_groups)
     groups_names = list(grouped.groups.keys())
     for kk, x_var in enumerate(columns):
         xx_min = df[x_var].min()
         xx_max = df[x_var].max()
         xx = np.linspace(xx_min, xx_max, 100)
+        y_peaks_aux = np.array([0])
         if kde_width is None:
             bandwidth = 0.1*np.nanstd(df[x_var])/np.abs(np.nanmean(df[x_var]))
 
@@ -98,17 +99,37 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
                 groups_names_2 = list(grouped_2.groups.keys())
             else:
                 groups_names_2 = ['NA']
+
             for jj, grp_2 in enumerate(groups_names_2):
                 if len(groups_names_2) == 1:
                     df_aux_2 = df_aux
                     grp_2 = grp
+                    yy_key_2 = 'NA'
                 else:
                     df_aux_2 = grouped_2.get_group(grp_2)
+                    yy_key_2 = grp_2
                 y = df_aux_2[x_var].to_numpy()
                 kde = KernelDensity(kernel='gaussian', bandwidth=bandwidth).fit(y.reshape(-1, 1))
                 log_dens = kde.score_samples(xx.reshape(-1, 1))
-                yy = np.exp(log_dens)
-                yy_base = ii*np.ones(len(xx))
+                yy[x_var][grp][yy_key_2] = np.exp(log_dens)
+                y_peaks_aux = np.append(y_peaks_aux, yy[x_var][grp][yy_key_2].max())
+        y_peaks_mean = np.mean(y_peaks_aux)
+        y_peaks_std = np.std(y_peaks_aux)
+        y_peaks[x_var] = y_peaks_mean + y_peaks_std
+
+    # Iterations to populate figure with plots
+    for kk, x_var in enumerate(columns):
+        xx_min = df[x_var].min()
+        xx_max = df[x_var].max()
+        xx = np.linspace(xx_min, xx_max, 100)
+        for ii, grp in enumerate(groups_names):
+            yy_base = -ii*np.ones(len(xx))*y_peaks[x_var]
+            for jj, grp_2 in enumerate(groups_names_2):
+                if len(groups_names_2) == 1:
+                    yy_key_2 = 'NA'
+                else:
+                    yy_key_2 = grp_2
+                yy_line = yy[x_var][grp][yy_key_2]
                 trace_base = {
                   "line": {
                     "color": "#000000",
@@ -131,10 +152,11 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
                   "name": grp_2,
                   "type": "scatter",
                   "x": xx.tolist(),
-                  "y": (yy_base + yy).tolist(),
+                  "y": (yy_base + yy_line).tolist(),
                   "fillcolor": clist[jj],
                   "legendgroup": grp_2,
-                  "showlegend": [True if (kk == 0) and (ii == 0) else False][0],
+                  "showlegend": [True if (kk == 0) and (ii == 0) and (len(groups_names_2) > 1)
+                                 else False][0],
                 }
                 figs.add_trace(go.Scatter(trace_base), row=(kk//2+1), col=(kk % 2+1))
                 figs.add_trace(go.Scatter(trace_pdf), row=(kk//2+1), col=(kk % 2+1))
@@ -144,25 +166,25 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
         else:
             li = str(kk+1)
 
-        # figs['layout']["xaxis"+li].update({
-        #     "type": "linear",
-        #     #"dtick": 5,
-        #     "range": [xx_min, xx_max],
-        #     "title": x_var,
-        #     "showgrid": True,
-        #     "showline": False,
-        #     "zeroline": False
-        # })
-        # figs['layout']["yaxis"+li].update({
-        #     "type": "linear",
-        #     "showgrid": True,
-        #     "showline": False,
-        #     "ticktext": groups_names,
-        #     "tickvals": [i for i in range(len(groups_names))],
-        #     "zeroline": False,
-        #     "gridcolor": "rgb(255,255,255)",
-        #     "gridwidth": 1
-        # })
+        figs['layout']["xaxis"+li].update({
+            "type": "linear",
+            #"dtick": 5,
+            "range": [xx_min, xx_max],
+            "title": x_var,
+            "showgrid": True,
+            "showline": False,
+            "zeroline": False
+        })
+        figs['layout']["yaxis"+li].update({
+            "type": "linear",
+            "showgrid": True,
+            "showline": False,
+            "ticktext": groups_names,
+            "tickvals": [-i*y_peaks[x_var] for i in range(len(groups_names))],
+            "zeroline": False,
+            "gridcolor": "rgb(255,255,255)",
+            "gridwidth": 1
+        })
     figs['layout'].update({
         "font": {"family": "Balto"},
         "hovermode": "closest",
@@ -170,3 +192,13 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
     })
 
     return figs
+
+
+class AutoDictionary(dict):
+    """A dictionary easy to populate not-defined keys"""
+    def __getitem__(self, item):
+        try:
+            return dict.__getitem__(self, item)
+        except KeyError:
+            value = self[item] = type(self)()
+            return value
