@@ -39,6 +39,7 @@ class Application(QMainWindow):
 
         self.init_console()
         self.console.push_vars({'self': self})
+        self.load_modules()
         self.show()
 
     def init_gui(self):
@@ -57,7 +58,6 @@ class Application(QMainWindow):
         action_profile.triggered.connect(lambda: self.refresh_profile())
         self.tabularMenu = self.toolsMenu.addMenu('Tabular')
         self.timeseriesMenu = self.toolsMenu.addMenu('Time Series')
-        self.load_modules()
 
         helpMenu = mainMenu.addMenu('Help')
         action_about = QAction('About', self)
@@ -140,9 +140,10 @@ class Application(QMainWindow):
 
     def load_modules(self):
         self.modules_list = load_all_modules()
+        self.lambdas_list = [ (lambda a: lambda: a.make_object(self))(o) for o in self.modules_list ]
         for i, module in enumerate(self.modules_list):
             action = QAction(module.menu_name, self)
-            action.triggered.connect(lambda: self.modules_list[i].make_object(self))
+            action.triggered.connect(self.lambdas_list[i])
             if module.menu_parent == 'Tabular':
                 self.tabularMenu.addAction(action)
             elif module.menu_parent == 'Time Series':

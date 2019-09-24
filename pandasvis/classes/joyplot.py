@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
+from pandasvis.utils.functions import AutoDictionary
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
@@ -192,13 +193,3 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
     })
 
     return figs
-
-
-class AutoDictionary(dict):
-    """A dictionary easy to populate not-defined keys"""
-    def __getitem__(self, item):
-        try:
-            return dict.__getitem__(self, item)
-        except KeyError:
-            value = self[item] = type(self)()
-            return value
