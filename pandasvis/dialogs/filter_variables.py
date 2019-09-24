@@ -12,7 +12,7 @@ ui_path = os.path.join(os.path.dirname(__file__), '..', 'ui')
 # Filter variables dialog ------------------------------------------------------
 Ui_FilterVars, _ = uic.loadUiType(os.path.join(ui_path, "filter_variables.ui"))
 class FilterVariablesDialog(QDialog, Ui_FilterVars):
-    def __init__(self, parent, df, force_group_by=False):
+    def __init__(self, parent, df):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Add filters')
@@ -21,9 +21,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         self.value = -1
         self.all_operations = []
         self.group_by = None
-        self.force_group_by = force_group_by
 
-        self.comboBox_0.activated.connect(lambda: self.update_current_condition('cb0'))
         self.comboBox_1.activated.connect(lambda: self.update_current_condition(None))
         self.comboBox_2.activated.connect(lambda: self.update_current_condition(None))
         self.comboBox_3.activated.connect(lambda: self.update_current_condition('rb1'))
@@ -44,8 +42,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         for op in operations:
             self.comboBox_2.addItem(op)
         vars = list(self.df.columns)
-        if not self.force_group_by:
-            self.comboBox_0.addItem('None')
+        self.comboBox_0.addItem('None')
         for var in vars:
             if self.df[var].dtype.name in ['object', 'bool', 'category']:
                 self.comboBox_0.addItem(var)
@@ -54,13 +51,6 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
 
     def update_current_condition(self, src=None):
         # Check source
-        if src == 'cb0':
-            if self.comboBox_0.currentText() != 'None':
-                self.txt1 = self.comboBox_0.currentText()
-                self.txt2 = 'group by'
-                self.txt3 = None
-                self.textEdit_1.setText('group by ' + self.txt1)
-            return
         if src == 'rb1':
             self.radioButton_1.setChecked(True)
         elif src == 'rb2':
@@ -84,13 +74,10 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
         aux['operation'] = self.txt2
         aux['operand_2'] = self.txt3
         aux['type_1'] = 'variable'
-        if self.txt2 == 'group by':
-            aux['type_2'] = None
+        if self.radioButton_1.isChecked():
+            aux['type_2'] = 'variable'
         else:
-            if self.radioButton_1.isChecked():
-                aux['type_2'] = 'variable'
-            else:
-                aux['type_2'] = 'other'
+            aux['type_2'] = 'other'
         self.all_operations.append(aux)
         # Add text
         curr_cond = self.textEdit_1.toPlainText()
@@ -122,9 +109,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
             elif op['type_2'] is not None:
                 op2 = float(op['operand_2'])
 
-            # Possible operations: ['group by', '==', '!=', '<', '>']
-            if op['operation'] == 'group by':
-                self.group_by = op['operand_1']
+            # Possible operations: ['==', '!=', '<', '>']
             elif op['operation'] == '==':
                 aux = (op1 == op2).to_numpy()
                 mask = mask*aux
@@ -138,6 +123,9 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
                 aux = (op1 > op2).to_numpy()
                 mask = mask*aux
         self.df = self.df[mask]
+        self.group_by = self.comboBox_0.currentText()
+        if self.group_by == 'None':
+            self.group_by = None
 
     def exit(self, val=-1):
         self.value = val

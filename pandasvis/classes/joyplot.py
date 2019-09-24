@@ -46,6 +46,7 @@ class Joyplot(QWidget):
                 # Writes at Logger
                 parent.write_to_logger(txt="Joyplot ready!")
             else:
+                parent.write_to_logger(txt="ERROR:")
                 parent.write_to_logger(txt=str(error))
 
         obj = Joyplot(parent)

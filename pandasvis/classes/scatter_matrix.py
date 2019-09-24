@@ -34,24 +34,53 @@ class ScatterMatrix(QWidget):
     @staticmethod
     def make_object(parent):
         """Makes object to be placed in new tab."""
+        def finish_thread(parent, obj, error):
+            if error is None:
+                # Load html to object
+                url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
+                obj.update_html(url=url)
+                # Makes new tab on parent and load it with new object
+                parent.new_tab_top(obj, obj.name)
+                # Writes at Logger
+                parent.write_to_logger(txt="Scatter Matrix ready!")
+            else:
+                parent.write_to_logger(txt="ERROR:")
+                parent.write_to_logger(txt=str(error))
         obj = ScatterMatrix(parent)
         # Select variables from Dataframe
         parent.update_selected_primary()
         df = parent.df[parent.selected_primary]
         # Open filter by condition dialog
-        w = FilterVariablesDialog(parent, df)
+        w = FilterVariablesDialog(parent=parent, df=df)
         if w.value == 1:
+            parent.write_to_logger(txt="Preparing Scatter Matrix... please wait.")
+            parent.tabs_bottom.setCurrentIndex(1)
+            thread = BusyThread(w, obj, parent)
+            thread.finished.connect(lambda: finish_thread(parent, obj, error=thread.error))
+            thread.start()
+
+
+# Runs conversion function, useful to wait for thread
+class BusyThread(QtCore.QThread):
+    def __init__(self, w, obj, parent):
+        super().__init__()
+        self.w = w
+        self.obj = obj
+        self.parent = parent
+        self.error = None
+
+    def run(self):
+        try:
             # Generate a dictionary of plotly plots
-            sm = custom_scatter_matrix(w.df, group_by=w.group_by)
+            sm = custom_scatter_matrix(df=self.w.df,
+                                       group_by=self.w.group_by)
             # Saves html to temporary folder
             plt_plot(figure_or_data=sm,
-                     filename=os.path.join(parent.temp_dir, obj.name+'.html'),
+                     filename=os.path.join(self.parent.temp_dir, self.obj.name+'.html'),
                      auto_open=False)
-            # Load scatter matrix html on object
-            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
-            obj.update_html(url=url)
-            # Makes new tab on parent and load it with new object
-            parent.new_tab_top(obj, obj.name)
+            self.error = None
+        except Exception as error:
+            self.error = error
 
 
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
@@ -158,7 +187,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
         figs.layout.update(legend=legend_layout)
         # Title
         title_layout = go.layout.Title(
-            text=['Grouped by: '+groupby if groupby is not None else None][0],
+            text=['Grouped by: '+group_by if group_by is not None else None][0],
             xref="paper",
             x=0,
         )
