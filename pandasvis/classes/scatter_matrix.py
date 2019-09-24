@@ -70,17 +70,17 @@ class BusyThread(QtCore.QThread):
         self.error = None
 
     def run(self):
-        try:
-            # Generate a dictionary of plotly plots
-            sm = custom_scatter_matrix(df=self.w.df,
-                                       group_by=self.w.group_by)
-            # Saves html to temporary folder
-            plt_plot(figure_or_data=sm,
-                     filename=os.path.join(self.parent.temp_dir, self.obj.name+'.html'),
-                     auto_open=False)
-            self.error = None
-        except Exception as error:
-            self.error = error
+        #try:
+        # Generate a dictionary of plotly plots
+        sm = custom_scatter_matrix(df=self.w.df,
+                                   group_by=self.w.group_by)
+        # Saves html to temporary folder
+        plt_plot(figure_or_data=sm,
+                 filename=os.path.join(self.parent.temp_dir, self.obj.name+'.html'),
+                 auto_open=False)
+        self.error = None
+        #except Exception as error:
+        #    self.error = error
 
 
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,

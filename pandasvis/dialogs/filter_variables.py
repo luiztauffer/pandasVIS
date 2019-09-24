@@ -110,7 +110,7 @@ class FilterVariablesDialog(QDialog, Ui_FilterVars):
                 op2 = float(op['operand_2'])
 
             # Possible operations: ['==', '!=', '<', '>']
-            elif op['operation'] == '==':
+            if op['operation'] == '==':
                 aux = (op1 == op2).to_numpy()
                 mask = mask*aux
             elif op['operation'] == '!=':
