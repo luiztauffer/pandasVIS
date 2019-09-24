@@ -32,9 +32,22 @@ class Joyplot(QWidget):
         self.module.load(url)
         self.module.show()
 
+
     @staticmethod
     def make_object(parent):
         """Makes object to be placed in new tab."""
+        def finish_thread(parent, obj, error):
+            if error is None:
+                # Load html to object
+                url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
+                obj.update_html(url=url)
+                # Makes new tab on parent and load it with new object
+                parent.new_tab_top(obj, obj.name)
+                # Writes at Logger
+                parent.write_to_logger(txt="Joyplot ready!")
+            else:
+                parent.write_to_logger(txt=str(error))
+
         obj = Joyplot(parent)
         # Select variables from Dataframe
         parent.update_selected_primary()
@@ -42,19 +55,35 @@ class Joyplot(QWidget):
         # Open filter by condition dialog
         w = JoyplotFilterDialog(parent=parent, df=df)
         if w.value == 1:
+            parent.write_to_logger(txt="Preparing Joyplot... please wait.")
+            parent.tabs_bottom.setCurrentIndex(1)
+            thread = BusyThread(w, obj, parent)
+            thread.finished.connect(lambda: finish_thread(parent, obj, error=thread.error))
+            thread.start()
+
+
+# Runs conversion function, useful to wait for thread
+class BusyThread(QtCore.QThread):
+    def __init__(self, w, obj, parent):
+        super().__init__()
+        self.w = w
+        self.obj = obj
+        self.parent = parent
+        self.error = None
+
+    def run(self):
+        try:
             # Generate a dictionary of plotly plots
-            jp = make_joyplot(df=w.df,
-                              y_groups=w.y_groups,
-                              group_by=w.group_by)
+            jp = make_joyplot(df=self.w.df,
+                              y_groups=self.w.y_groups,
+                              group_by=self.w.group_by)
             # Saves html to temporary folder
             plt_plot(figure_or_data=jp,
-                     filename=os.path.join(parent.temp_dir, obj.name+'.html'),
+                     filename=os.path.join(self.parent.temp_dir, self.obj.name+'.html'),
                      auto_open=False)
-            # Load html to object
-            url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
-            obj.update_html(url=url)
-            # Makes new tab on parent and load it with new object
-            parent.new_tab_top(obj, obj.name)
+            self.error = None
+        except Exception as error:
+            self.error = error
 
 
 def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):

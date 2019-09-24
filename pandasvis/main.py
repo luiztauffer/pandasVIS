@@ -11,6 +11,7 @@ from pandasvis.utils.load_all_modules import load_all_modules
 import numpy as np
 import pandas as pd
 import pandas_profiling
+import datetime
 import os
 import sys
 import shutil
@@ -207,6 +208,11 @@ class Application(QMainWindow):
     def new_tab_bottom(self, tab_object, title):
         """Opens new tab."""
         self.tabs_bottom.addTab(tab_object, title)
+
+    def write_to_logger(self, txt):
+        time = datetime.datetime.now().time().strftime("%H:%M:%S")
+        full_txt = "[" + time + "]    " + txt
+        self.logger.append(full_txt)
 
     def refresh_profile(self):
         """Produces new profile overview with current df"""
