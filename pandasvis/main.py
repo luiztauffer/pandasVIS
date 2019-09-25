@@ -66,17 +66,23 @@ class Application(QMainWindow):
         action_about.triggered.connect(self.about)
 
         # Left panels ----------------------------------------------------------
-        self.bt_refreshOverview = QPushButton('Overview')
-        self.bt_refreshOverview.clicked.connect(lambda: self.test())
-        self.bt_refreshOverview.setToolTip("Refresh Overview")
+        self.bt_markall = QPushButton('Mark all')
+        self.bt_markall.clicked.connect(self.mark_all)
+        self.bt_unmarkall = QPushButton('Unmark all')
+        self.bt_unmarkall.clicked.connect(self.unmark_all)
+        self.bt_test = QPushButton(' ')
+        self.bt_test.clicked.connect(self.test)
 
         self.tree_primary = QTreeCustomPrimary(parent=self)
-        self.tree_primary.setHeaderLabels(['Primary Variables'])
+        self.tree_primary.setAlternatingRowColors(True)
+        self.tree_primary.setHeaderLabels(['Primary Variables', 'type'])
         self.tree_primary.setToolTip("Columns of the Dataframe. Can be accessed\n"
                                      "in the console with the variable 'df'")
         self.tree_primary.itemClicked.connect(self.update_selected_primary)
+
         self.tree_secondary = QTreeCustomSecondary(parent=self)
-        self.tree_secondary.setHeaderLabels(['Secondary Variables'])
+        self.tree_secondary.setAlternatingRowColors(True)
+        self.tree_secondary.setHeaderLabels(['Secondary Variables', 'type'])
         self.tree_secondary.setToolTip("Secondary variables, can be added to the Dataframe.\n"
                                        "Can be accessed in the console with the variable \n"
                                        "'secondary_vars'")
@@ -99,7 +105,10 @@ class Application(QMainWindow):
         self.vbox1.addWidget(self.tree_secondary)
 
         self.grid_left1 = QGridLayout()
-        self.grid_left1.addWidget(self.bt_refreshOverview, 0, 0, 1, 3)
+        self.grid_left1.setColumnStretch(5, 1)
+        self.grid_left1.addWidget(self.bt_markall, 0, 0, 1, 2)
+        self.grid_left1.addWidget(self.bt_unmarkall, 0, 2, 1, 2)
+        self.grid_left1.addWidget(self.bt_test, 0, 4, 1, 1)
         self.grid_left1.addWidget(self.vbox1, 1, 0, 1, 6)
         self.left_widget = QWidget()
         self.left_widget.setLayout(self.grid_left1)
@@ -179,13 +188,11 @@ class Application(QMainWindow):
         self.tree_primary.clear()
         self.tree_secondary.clear()
         for var1 in self.primary_names:  # primary variables list
-            parent = QTreeWidgetItem(self.tree_primary)
-            parent.setText(0, var1)
+            parent = QTreeWidgetItem(self.tree_primary, [var1, str(self.df[var1].dtype)])
             parent.setFlags(parent.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             parent.setCheckState(0, QtCore.Qt.Checked)
         for var2 in self.secondary_names:  # secondary variables list
-            parent = QTreeWidgetItem(self.tree_secondary)
-            parent.setText(0, var2)
+            parent = QTreeWidgetItem(self.tree_secondary, [var2, str(self.secondary_vars[var2].dtype)])
             parent.setFlags(parent.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
             parent.setCheckState(0, QtCore.Qt.Checked)
 
@@ -195,6 +202,7 @@ class Application(QMainWindow):
         self.console._execute("import numpy as np", True)
         self.console._execute("import matplotlib.pyplot as plt", True)
         self.console.push_vars({'df': self.df})
+        self.console.push_vars({'secondary_vars': self.secondary_vars})
         self.console.clear()
         self.console.print_text('df --> Dataframe with Primary variables\n')
         self.console.print_text('secondary_vars --> Dictionary with Secondary variables\n\n')
@@ -227,6 +235,22 @@ class Application(QMainWindow):
         self.profile.load(url)
         self.profile.show()
         self.tabs_top.setCurrentIndex(0)
+
+    def mark_all(self):
+        """Iterate over all nodes of the tree and marks them."""
+        self.iterator = QTreeWidgetItemIterator(self.tree_primary, QTreeWidgetItemIterator.All)
+        while self.iterator.value():
+            item = self.iterator.value()
+            item.setCheckState(0, QtCore.Qt.Checked)
+            self.iterator += 1
+
+    def unmark_all(self):
+        """Iterate over all nodes of the tree and unmarks them."""
+        self.iterator = QTreeWidgetItemIterator(self.tree_primary, QTreeWidgetItemIterator.All)
+        while self.iterator.value():
+            item = self.iterator.value()
+            item.setCheckState(0, QtCore.Qt.Unchecked)
+            self.iterator += 1
 
     def update_selected_primary(self):
         """Iterate over all nodes of the tree and save selected items names to list"""
