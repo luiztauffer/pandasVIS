@@ -48,7 +48,10 @@ class QTreeCustomPrimary(QTreeWidget):
             if action.text() == 'Move to Secondary':
                 move_to_secondary(parent=self.parent, name=name)
             if action.text() == 'Delete':
-                print('')
+                self.parent.df.drop(name, axis=1, inplace=True)
+                self.parent.primary_names = self.parent.df.keys().tolist()
+                self.parent.console.push_vars({'df': self.parent.df})
+                self.parent.init_trees()
 
 
 class QTreeCustomSecondary(QTreeWidget):
@@ -91,7 +94,10 @@ class QTreeCustomSecondary(QTreeWidget):
             if action.text() == 'Move to Primary':
                 move_to_primary(parent=self.parent, name=name)
             if action.text() == 'Delete':
-                print('')
+                del self.parent.secondary_vars[name]
+                self.parent.secondary_names = list(self.parent.secondary_vars.keys())
+                self.parent.console.push_vars({'secondary_vars': self.parent.secondary_vars})
+                self.parent.init_trees()
 
 
 def move_to_secondary(parent, name):
