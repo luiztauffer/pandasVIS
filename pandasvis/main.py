@@ -141,7 +141,7 @@ class Application(QMainWindow):
 
     def load_modules(self):
         self.modules_list = load_all_modules()
-        self.lambdas_list = [ (lambda a: lambda: a.make_object(self))(o) for o in self.modules_list ]
+        self.lambdas_list = [ (lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list ]
         for i, module in enumerate(self.modules_list):
             action = QAction(module.menu_name, self)
             action.triggered.connect(self.lambdas_list[i])
@@ -149,6 +149,10 @@ class Application(QMainWindow):
                 self.tabularMenu.addAction(action)
             elif module.menu_parent == 'Time Series':
                 self.timeseriesMenu.addAction(action)
+
+    def instantiate_module(self, module):
+        obj = module(self)
+        obj.make_plot()
 
     def open_file(self, filename):
         ''' Open file and store it as a Pandas Dataframe.'''

@@ -32,9 +32,7 @@ class Joyplot(QWidget):
         self.module.load(url)
         self.module.show()
 
-
-    @staticmethod
-    def make_object(parent):
+    def make_plot(self):
         """Makes object to be placed in new tab."""
         def finish_thread(parent, obj, error):
             if error is None:
@@ -49,17 +47,17 @@ class Joyplot(QWidget):
                 parent.write_to_logger(txt="ERROR:")
                 parent.write_to_logger(txt=str(error))
 
-        obj = Joyplot(parent)
+        obj = Joyplot(self.parent)
         # Select variables from Dataframe
-        parent.update_selected_primary()
-        df = parent.df[parent.selected_primary]
+        self.parent.update_selected_primary()
+        df = self.parent.df[self.parent.selected_primary]
         # Open filter by condition dialog
-        w = JoyplotFilterDialog(parent=parent, df=df)
+        w = JoyplotFilterDialog(parent=self.parent, df=df)
         if w.value == 1:
-            parent.write_to_logger(txt="Preparing Joyplot... please wait.")
-            parent.tabs_bottom.setCurrentIndex(1)
-            thread = BusyThread(w, obj, parent)
-            thread.finished.connect(lambda: finish_thread(parent, obj, error=thread.error))
+            self.parent.write_to_logger(txt="Preparing Joyplot... please wait.")
+            self.parent.tabs_bottom.setCurrentIndex(1)
+            thread = BusyThread(w, obj, self.parent)
+            thread.finished.connect(lambda: finish_thread(self.parent, obj, error=thread.error))
             thread.start()
 
 
