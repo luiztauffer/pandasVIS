@@ -34,40 +34,38 @@ class Joyplot(QWidget):
 
     def make_plot(self):
         """Makes object to be placed in new tab."""
-        def finish_thread(parent, obj, error):
+        def finish_thread(obj, error):
             if error is None:
                 # Load html to object
-                url = QtCore.QUrl.fromLocalFile(os.path.join(parent.temp_dir, obj.name+'.html'))
+                url = QtCore.QUrl.fromLocalFile(os.path.join(obj.parent.temp_dir, obj.name+'.html'))
                 obj.update_html(url=url)
                 # Makes new tab on parent and load it with new object
-                parent.new_tab_top(obj, obj.name)
+                obj.parent.new_tab_top(obj, obj.name)
                 # Writes at Logger
-                parent.write_to_logger(txt="Joyplot ready!")
+                obj.parent.write_to_logger(txt="Joyplot ready!")
             else:
-                parent.write_to_logger(txt="ERROR:")
-                parent.write_to_logger(txt=str(error))
+                obj.parent.write_to_logger(txt="ERROR:")
+                obj.parent.write_to_logger(txt=str(error))
 
-        obj = Joyplot(self.parent)
         # Select variables from Dataframe
         self.parent.update_selected_primary()
         df = self.parent.df[self.parent.selected_primary]
         # Open filter by condition dialog
-        w = JoyplotFilterDialog(parent=self.parent, df=df)
+        w = JoyplotFilterDialog(parent=self, df=df)
         if w.value == 1:
             self.parent.write_to_logger(txt="Preparing Joyplot... please wait.")
             self.parent.tabs_bottom.setCurrentIndex(1)
-            thread = BusyThread(w, obj, self.parent)
-            thread.finished.connect(lambda: finish_thread(self.parent, obj, error=thread.error))
+            thread = BusyThread(w, self)
+            thread.finished.connect(lambda: finish_thread(self, error=thread.error))
             thread.start()
 
 
 # Runs conversion function, useful to wait for thread
 class BusyThread(QtCore.QThread):
-    def __init__(self, w, obj, parent):
+    def __init__(self, w, obj):
         super().__init__()
         self.w = w
         self.obj = obj
-        self.parent = parent
         self.error = None
 
     def run(self):
@@ -78,7 +76,7 @@ class BusyThread(QtCore.QThread):
                               group_by=self.w.group_by)
             # Saves html to temporary folder
             plt_plot(figure_or_data=jp,
-                     filename=os.path.join(self.parent.temp_dir, self.obj.name+'.html'),
+                     filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
                      auto_open=False)
             self.error = None
         except Exception as error:
