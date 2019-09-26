@@ -1,5 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
+from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
+                             QStyle)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from pandasvis.dialogs.filter_variables import FilterVariablesDialog
@@ -26,10 +27,20 @@ class ScatterMatrix(QWidget):
 
         self.html = QWebEngineView()
 
+        self.bt_close = QPushButton('Close')
+        self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
+        self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
+
+        self.grid1 = QGridLayout()
+        self.grid1.setColumnStretch(5, 1)
+        self.grid1.addWidget(self.bt_close, 0, 0, 1, 1)
+        self.grid1.addWidget(QWidget(), 0, 1, 1, 5)
 
         self.vbox = QVBoxLayout()
+        self.vbox.addLayout(self.grid1)
         self.vbox.addWidget(self.html)
         self.setLayout(self.vbox)
+
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""

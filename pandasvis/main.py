@@ -227,6 +227,16 @@ class Application(QMainWindow):
         """Opens new tab."""
         self.tabs_bottom.addTab(tab_object, title)
 
+    def close_tab_top(self, object):
+        """Closes tab and removes associated objects"""
+        # Removes tab
+        curr_ind = self.tabs_top.children()[0].currentIndex()
+        self.tabs_top.removeTab(curr_ind)
+        # Removes specific object instance from list
+        self.instances_list.remove(object)
+        # Deletes object form memory
+        object.deleteLater()
+
     def write_to_logger(self, txt):
         time = datetime.datetime.now().time().strftime("%H:%M:%S")
         full_txt = "[" + time + "]    " + txt
