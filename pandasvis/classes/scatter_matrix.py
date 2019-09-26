@@ -32,9 +32,9 @@ class ScatterMatrix(QWidget):
         self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
 
         self.grid1 = QGridLayout()
-        self.grid1.setColumnStretch(5, 1)
-        self.grid1.addWidget(self.bt_close, 0, 0, 1, 1)
-        self.grid1.addWidget(QWidget(), 0, 1, 1, 5)
+        self.grid1.setColumnStretch(0, 1)
+        self.grid1.addWidget(QWidget(), 0, 0, 1, 5)
+        self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
 
         self.vbox = QVBoxLayout()
         self.vbox.addLayout(self.grid1)
@@ -57,7 +57,7 @@ class ScatterMatrix(QWidget):
                 # Makes new tab on parent and load it with new object
                 obj.parent.new_tab_top(obj, obj.name)
                 # Writes at Logger
-                obj.parent.write_to_logger(txt="Scatter Matrix ready!")
+                obj.parent.write_to_logger(txt=self.name + " ready!")
             else:
                 obj.parent.write_to_logger(txt="ERROR:")
                 obj.parent.write_to_logger(txt=str(error))
@@ -68,7 +68,7 @@ class ScatterMatrix(QWidget):
         # Open filter by condition dialog
         w = FilterVariablesDialog(parent=self, df=df)
         if w.value == 1:
-            self.parent.write_to_logger(txt="Preparing Scatter Matrix... please wait.")
+            self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
             self.parent.tabs_bottom.setCurrentIndex(1)
             thread = BusyThread(w, self)
             thread.finished.connect(lambda: finish_thread(self, error=thread.error))
@@ -84,17 +84,17 @@ class BusyThread(QtCore.QThread):
         self.error = None
 
     def run(self):
-        #try:
-        # Generate a dictionary of plotly plots
-        self.obj.figure = custom_scatter_matrix(df=self.w.df,
-                                                group_by=self.w.group_by)
-        # Saves html to temporary folder
-        plt_plot(figure_or_data=self.obj.figure,
-                 filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
-                 auto_open=False)
-        self.error = None
-        #except Exception as error:
-        #    self.error = error
+        try:
+            # Generate a dictionary of plotly plots
+            self.obj.figure = custom_scatter_matrix(df=self.w.df,
+                                                    group_by=self.w.group_by)
+            # Saves html to temporary folder
+            plt_plot(figure_or_data=self.obj.figure,
+                     filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
+                     auto_open=False)
+            self.error = None
+        except Exception as error:
+            self.error = error
 
 
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,

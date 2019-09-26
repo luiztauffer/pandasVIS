@@ -54,9 +54,6 @@ class Application(QMainWindow):
         action_open_file.triggered.connect(lambda: self.open_file(None))
 
         self.toolsMenu = mainMenu.addMenu('Tools')
-        action_profile = QAction('Profile', self)
-        self.toolsMenu.addAction(action_profile)
-        action_profile.triggered.connect(lambda: self.refresh_profile())
         self.tabularMenu = self.toolsMenu.addMenu('Tabular')
         self.timeseriesMenu = self.toolsMenu.addMenu('Time Series')
 
@@ -243,16 +240,6 @@ class Application(QMainWindow):
         time = datetime.datetime.now().time().strftime("%H:%M:%S")
         full_txt = "[" + time + "]    " + txt
         self.logger.append(full_txt)
-
-    def refresh_profile(self):
-        """Produces new profile overview with current df"""
-        self.primary_names = self.df.keys().tolist()
-        self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
-        self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.temp_dir, 'summary_report.html'))
-        self.profile.load(url)
-        self.profile.show()
-        self.tabs_top.setCurrentIndex(0)
 
     def mark_all(self):
         """Iterate over all nodes of the tree and marks them."""

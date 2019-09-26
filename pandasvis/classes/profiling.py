@@ -3,28 +3,25 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
-from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
-from pandasvis.utils.functions import AutoDictionary
-from pandasvis.utils.styles import palettes
-
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
 from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
+import pandas_profiling
 import os
 
 
-class Joyplot(QWidget):
-    menu_parent = "Tabular"
-    menu_name = "Joyplot"
+class PandasProfiling(QWidget):
+    menu_parent = "None"
+    menu_name = "PandasProfiling"
 
     def __init__(self, parent):
         """Description of this module."""
         super().__init__()
         self.parent = parent
-        self.name = "Joyplot"
+        self.name = "Profile"
 
         self.html = QWebEngineView()
 
@@ -65,34 +62,27 @@ class Joyplot(QWidget):
         # Select variables from Dataframe
         self.parent.update_selected_primary()
         df = self.parent.df[self.parent.selected_primary]
-        # Open filter by condition dialog
-        w = JoyplotFilterDialog(parent=self, df=df)
-        if w.value == 1:
-            self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
-            self.parent.tabs_bottom.setCurrentIndex(1)
-            thread = BusyThread(w, self)
-            thread.finished.connect(lambda: finish_thread(self, error=thread.error))
-            thread.start()
+        self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
+        self.parent.tabs_bottom.setCurrentIndex(1)
+        thread = BusyThread(df, self)
+        thread.finished.connect(lambda: finish_thread(self, error=thread.error))
+        thread.start()
 
 
 # Runs conversion function, useful to wait for thread
 class BusyThread(QtCore.QThread):
-    def __init__(self, w, obj):
+    def __init__(self, df, obj):
         super().__init__()
-        self.w = w
+        self.df = df
         self.obj = obj
         self.error = None
 
     def run(self):
         try:
-            # Generate a dictionary of plotly plots
-            self.obj.figure = make_joyplot(df=self.w.df,
-                                           y_groups=self.w.y_groups,
-                                           group_by=self.w.group_by)
+            # Generates
+            self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True})
             # Saves html to temporary folder
-            plt_plot(figure_or_data=self.obj.figure,
-                     filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
-                     auto_open=False)
+            self.df_profile.to_file(os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'), silent=True)
             self.error = None
         except Exception as error:
             self.error = error
