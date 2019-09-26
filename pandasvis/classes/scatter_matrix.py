@@ -98,10 +98,13 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
         groups_names = ['all']
 
     # Remove non-numerical columns
+    to_remove = []
     for col in columns:
         dtype = str(df[col].dtypes)
         if not (dtype == 'int64' or dtype == 'float64'):
-            columns.remove(col)
+            to_remove.append(col)
+    for col in to_remove:
+        columns.remove(col)
 
     nVars = len(columns)
     figs = tools.make_subplots(rows=nVars, cols=nVars, print_grid=False)

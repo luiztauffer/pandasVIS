@@ -149,6 +149,7 @@ class Application(QMainWindow):
         pass
 
     def load_modules(self):
+        self.instances_list = []
         self.modules_list = load_all_modules()
         self.lambdas_list = [ (lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list ]
         for i, module in enumerate(self.modules_list):
@@ -160,8 +161,13 @@ class Application(QMainWindow):
                 self.timeseriesMenu.addAction(action)
 
     def instantiate_module(self, module):
+        """Instantiates a chosen module class."""
         obj = module(self)
+        # Check how many instances of same class already exist
+        nInst = sum([item.menu_name == obj.menu_name for item in self.instances_list])
+        obj.name += ' ' + str(nInst)
         obj.make_plot()
+        self.instances_list.append(obj)
 
     def open_file(self, filename):
         ''' Open file and store it as a Pandas Dataframe.'''

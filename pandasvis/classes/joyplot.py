@@ -96,10 +96,14 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
     columns = df.columns.to_list()
     columns.remove(y_groups)
     # Remove non-numerical columns
+    to_remove = []
     for col in columns:
         dtype = str(df[col].dtypes)
         if not (dtype == 'int64' or dtype == 'float64'):
-            columns.remove(col)
+            to_remove.append(col)
+    for col in to_remove:
+        columns.remove(col)
+        
     nVars = len(columns)
     if nVars > 1:
         figs = tools.make_subplots(rows=int(np.ceil(nVars/2.)), cols=2, print_grid=False)
