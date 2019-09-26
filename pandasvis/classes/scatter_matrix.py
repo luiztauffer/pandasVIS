@@ -87,7 +87,8 @@ class BusyThread(QtCore.QThread):
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, group_by=None,
                           palette=None, **iplot_kwargs):
-                          
+
+    # Color palette          
     if palette is None:
         palette = palettes['Tableau10']
 

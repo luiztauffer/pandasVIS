@@ -1,4 +1,4 @@
-palettefrom PyQt5 import QtCore
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
