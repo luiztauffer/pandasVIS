@@ -1,7 +1,10 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+
 from pandasvis.dialogs.filter_variables import FilterVariablesDialog
+from pandasvis.utils.styles import palettes
+
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
@@ -84,10 +87,9 @@ class BusyThread(QtCore.QThread):
 def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, group_by=None,
                           palette=None, **iplot_kwargs):
+                          
     if palette is None:
-        # Tableau10 scheme
-        palette = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f",
-                   "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab"]
+        palette = palettes['Tableau10']
 
     columns = df.columns.to_list()
     if group_by is not None:

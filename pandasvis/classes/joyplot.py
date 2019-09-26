@@ -1,8 +1,11 @@
-from PyQt5 import QtCore
+palettefrom PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
+
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
 from pandasvis.utils.functions import AutoDictionary
+from pandasvis.utils.styles import palettes
+
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
@@ -83,15 +86,15 @@ class BusyThread(QtCore.QThread):
             self.error = error
 
 
-def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
+def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
+                 palette=None):
     """
     Makes a Joyplot / Ridge plot.
     """
 
     # List of colors for multiple groups, if group_by!=None
-    clist = ["rgba(134, 149, 184, 0.5)", "rgba(184, 179, 134, 0.5)",
-             "rgba(184, 134, 134, 0.5)", "rgba(134, 184, 132, 0.5)",
-             "rgba(140, 134, 184, 0.5)", "rgba(184, 134, 176, 0.5)"]
+    if palette is None:
+        palette = palettes['palette_0']
 
     columns = df.columns.to_list()
     columns.remove(y_groups)
@@ -103,7 +106,7 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
             to_remove.append(col)
     for col in to_remove:
         columns.remove(col)
-        
+
     nVars = len(columns)
     if nVars > 1:
         figs = tools.make_subplots(rows=int(np.ceil(nVars/2.)), cols=2, print_grid=False)
@@ -184,7 +187,7 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None):
                   "type": "scatter",
                   "x": xx.tolist(),
                   "y": (yy_base + yy_line).tolist(),
-                  "fillcolor": clist[jj],
+                  "fillcolor": palette[jj],
                   "legendgroup": grp_2,
                   "showlegend": [True if (kk == 0) and (ii == 0) and (len(groups_names_2) > 1)
                                  else False][0],
