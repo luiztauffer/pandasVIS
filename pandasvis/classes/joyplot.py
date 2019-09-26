@@ -25,15 +25,18 @@ class Joyplot(QWidget):
         self.parent = parent
         self.name = "Joyplot"
 
-        self.module = QWebEngineView()
+        self.html = QWebEngineView()
+
+
+
         self.vbox = QVBoxLayout()
-        self.vbox.addWidget(self.module)
+        self.vbox.addWidget(self.html)
         self.setLayout(self.vbox)
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
-        self.module.load(url)
-        self.module.show()
+        self.html.load(url)
+        self.html.show()
 
     def make_plot(self):
         """Makes object to be placed in new tab."""
@@ -74,11 +77,11 @@ class BusyThread(QtCore.QThread):
     def run(self):
         try:
             # Generate a dictionary of plotly plots
-            jp = make_joyplot(df=self.w.df,
-                              y_groups=self.w.y_groups,
-                              group_by=self.w.group_by)
+            self.obj.figure = make_joyplot(df=self.w.df,
+                                           y_groups=self.w.y_groups,
+                                           group_by=self.w.group_by)
             # Saves html to temporary folder
-            plt_plot(figure_or_data=jp,
+            plt_plot(figure_or_data=self.obj.figure,
                      filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
                      auto_open=False)
             self.error = None

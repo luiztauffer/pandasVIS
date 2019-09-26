@@ -24,15 +24,17 @@ class ScatterMatrix(QWidget):
         self.parent = parent
         self.name = "Scatter Matrix"
 
-        self.module = QWebEngineView()
+        self.html = QWebEngineView()
+
+
         self.vbox = QVBoxLayout()
-        self.vbox.addWidget(self.module)
+        self.vbox.addWidget(self.html)
         self.setLayout(self.vbox)
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
-        self.module.load(url)
-        self.module.show()
+        self.html.load(url)
+        self.html.show()
 
     def make_plot(self):
         """Makes object to be placed in new tab."""
@@ -73,10 +75,10 @@ class BusyThread(QtCore.QThread):
     def run(self):
         #try:
         # Generate a dictionary of plotly plots
-        sm = custom_scatter_matrix(df=self.w.df,
-                                   group_by=self.w.group_by)
+        self.obj.figure = custom_scatter_matrix(df=self.w.df,
+                                                group_by=self.w.group_by)
         # Saves html to temporary folder
-        plt_plot(figure_or_data=sm,
+        plt_plot(figure_or_data=self.obj.figure,
                  filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
                  auto_open=False)
         self.error = None
@@ -88,7 +90,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                           hist_type='kde', kde_width=None, group_by=None,
                           palette=None, **iplot_kwargs):
 
-    # Color palette          
+    # Color palette
     if palette is None:
         palette = palettes['Tableau10']
 
