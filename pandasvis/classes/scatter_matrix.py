@@ -157,6 +157,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                             kind='histogram', keys=[i],
                             asFigure=True, bins=bins
                         )
+                    figs.add_trace(fig, row=ci+1, col=cj+1)
                 elif j < i:    # bi-variate scatter plot
                     y1 = df_aux[j].to_numpy()
                     Ym1 = np.min(y1)
@@ -179,23 +180,10 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                         # xaxis='x'+str(ii),
                         yaxis='y'+str(ii),
                     )
-                else:
-                    fig = go.Scatter(x=[], y=[])
-                    figs['layout']['xaxis'+str(ii+1)].update(
-                        showticklabels=False,
-                        zeroline=False,
-                        showline=False,
-                        showgrid=False)
-                    figs['layout']['yaxis'+str(ii+1)].update(
-                        showticklabels=False,
-                        zeroline=False,
-                        showline=False,
-                        showgrid=False
-                    )
+                    figs.add_trace(fig, row=ci+1, col=cj+1)
                 # Y labels
                 if cj == 0:
                     figs['layout']['yaxis'+str(ii+1)].update(title=i)
-                figs.append_trace(fig, ci+1, cj+1)
 
         # Legend
         legend_layout = go.layout.Legend(

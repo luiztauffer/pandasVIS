@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
+from pandasvis.dialogs.layout_dialog import LayoutDialog
 from pandasvis.utils.functions import AutoDictionary
 from pandasvis.utils.styles import palettes
 
@@ -32,15 +33,24 @@ class Joyplot(QWidget):
         self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
 
+        self.bt_layout = QPushButton('Layout')
+        self.bt_layout.setIcon(self.style().standardIcon(QStyle.SP_FileDialogListView))
+        self.bt_layout.clicked.connect(self.layout_dialog)
+
         self.grid1 = QGridLayout()
         self.grid1.setColumnStretch(0, 1)
-        self.grid1.addWidget(QWidget(), 0, 0, 1, 5)
+        self.grid1.addWidget(QWidget(), 0, 0, 1, 4)
+        self.grid1.addWidget(self.bt_layout, 0, 4, 1, 1)
         self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
 
         self.vbox = QVBoxLayout()
         self.vbox.addLayout(self.grid1)
         self.vbox.addWidget(self.html)
         self.setLayout(self.vbox)
+
+    def layout_dialog(self):
+        """Opens layout dialog"""
+        w = LayoutDialog(parent=self)
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
@@ -223,11 +233,11 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
         })
         figs['layout']["yaxis"+li].update({
             "type": "linear",
-            "showgrid": True,
-            "showline": False,
             "ticktext": groups_names,
             "tickvals": [-i*y_peaks[x_var] for i in range(len(groups_names))],
             "zeroline": False,
+            "showline": False,
+            "showgrid": True,
             "gridcolor": "rgb(255,255,255)",
             "gridwidth": 1
         })

@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem,
+from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem, QLabel,
                              QMainWindow, QFileDialog, QAction, QVBoxLayout,
                              QGridLayout, QPushButton, QTreeWidgetItemIterator,
                              QTabWidget, QSplitter, QTextEdit, QMessageBox)
@@ -21,8 +21,6 @@ class Application(QMainWindow):
     def __init__(self, filename):
         super().__init__()
 
-        self.centralwidget = QWidget()
-        self.setCentralWidget(self.centralwidget)
         self.resize(1200, 900)
         self.setWindowTitle('PandasVIS')
 
@@ -113,13 +111,8 @@ class Application(QMainWindow):
         # Center panels -------------------------------------------------------
         # Top tabs
         self.tabs_top = QTabWidget()
-        self.tab1 = QWidget()
-        self.tabs_top.addTab(self.tab1, "Profile")
-        # Create Profile tab
-        self.profile_layout = QVBoxLayout()
-        self.profile = QWebEngineView()
-        self.profile_layout.addWidget(self.profile)
-        self.tab1.setLayout(self.profile_layout)
+        self.tab0 = QWidget()
+        self.tabs_top.addTab(self.tab0, "Tools")
 
         # Bottom tabs
         self.tabs_bottom = QTabWidget()
@@ -143,19 +136,39 @@ class Application(QMainWindow):
         self.setCentralWidget(self.hbox)
 
     def test(self):
-        pass
+        from pandasvis.dialogs.layout_dialog import LayoutDialog
+        self.name = 'testing'
+        w = LayoutDialog(parent=self)
 
     def load_modules(self):
+        # Main tools tab buttons layout
+        self.tools_grid = QGridLayout()
+        self.tools_grid.setColumnStretch(3, 1)
+        self.lbl_tabular = QLabel("Tabular")
+        self.tools_grid.addWidget(self.lbl_tabular, 0, 0, 1, 2)
+        # modules and lambdas lists
         self.instances_list = []
         self.modules_list = load_all_modules()
         self.lambdas_list = [ (lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list ]
         for i, module in enumerate(self.modules_list):
+            # Populates Menu bar
             action = QAction(module.menu_name, self)
             action.triggered.connect(self.lambdas_list[i])
+            if module.menu_parent == 'None':
+                self.toolsMenu.addAction(action)
             if module.menu_parent == 'Tabular':
                 self.tabularMenu.addAction(action)
             elif module.menu_parent == 'Time Series':
                 self.timeseriesMenu.addAction(action)
+            # Populates buttons tab
+            btn = QPushButton(module.menu_name)
+            btn.clicked.connect(self.lambdas_list[i])
+            self.tools_grid.addWidget(btn, 1, i, 1, 1)
+        self.tools_grid.addWidget(QWidget(), 1, i+1, 1, 1)
+        self.tools_grid.addWidget(QWidget(), 2, 0, 1, 1)
+        self.tools_grid.setRowStretch(3, 1)
+        self.tab0.setLayout(self.tools_grid)
+
 
     def instantiate_module(self, module):
         """Instantiates a chosen module class."""
