@@ -52,6 +52,10 @@ class Joyplot(QWidget):
         """Opens layout dialog"""
         w = LayoutDialog(parent=self)
 
+    def layout_update(self, changes):
+        """Updates figure layout with dictionary in changes"""
+        self.figure['layout'].update(changes)
+
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
         self.html.load(url)

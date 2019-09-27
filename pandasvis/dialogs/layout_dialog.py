@@ -1,13 +1,21 @@
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QMainWindow, QPushButton, QWidget, QGridLayout,
                              QStyle, QFontDialog, QGroupBox, QLineEdit,
-                             QVBoxLayout, QLabel)
+                             QVBoxLayout, QLabel, QColorDialog)
 from pandasvis.utils.classes import CollapsibleBox
+from pandasvis.utils.functions import AutoDictionary
 
 
 class LayoutDialog(QMainWindow):
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("Layout for " + parent.name)
+        self.setWindowFlags(
+            QtCore.Qt.Window |
+            QtCore.Qt.CustomizeWindowHint |
+            QtCore.Qt.WindowTitleHint |
+            QtCore.Qt.WindowCloseButtonHint
+        )
         self.parent = parent
 
         self.bt_uplayout = QPushButton('Update layout')
@@ -16,15 +24,24 @@ class LayoutDialog(QMainWindow):
 
         self.bt_close = QPushButton('Close')
         self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
-        self.bt_close.clicked.connect(self.choose_font)
+        #self.bt_close.clicked.connect(self.choose_font)
 
         # Title parameters
-        self.lbl_text = QLabel('text:')
-        self.lin_text = QLineEdit('')
+        self.lbl_titletext = QLabel('text:')
+        self.lin_titletext = QLineEdit('')
+        self.lbl_titlefont = QLabel('font:')
+        self.btn_titlefont = QPushButton('Choose')
+        self.btn_titlefont.clicked.connect(lambda: self.choose_font(target='title'))
+        self.btn_titlecolor = QPushButton('Color')
+        self.btn_titlecolor.clicked.connect(lambda: self.choose_color(target='title'))
 
         self.title_grid = QGridLayout()
-        self.title_grid.addWidget(self.lbl_text, 0, 0, 1, 1)
-        self.title_grid.addWidget(self.lin_text, 0, 1, 1, 2)
+        self.title_grid.setColumnStretch(3, 1)
+        self.title_grid.addWidget(self.lbl_titletext, 0, 0, 1, 1)
+        self.title_grid.addWidget(self.lin_titletext, 0, 1, 1, 3)
+        self.title_grid.addWidget(self.lbl_titlefont, 1, 0, 1, 1)
+        self.title_grid.addWidget(self.btn_titlefont, 1, 1, 1, 1)
+        self.title_grid.addWidget(self.btn_titlecolor, 1, 2, 1, 1)
 
         self.title_group = CollapsibleBox(title='Title', parent=self)
         self.title_group.setContentLayout(self.title_grid)
@@ -34,6 +51,7 @@ class LayoutDialog(QMainWindow):
         self.lin_xtitle = QLineEdit('')
 
         self.xaxis_grid = QGridLayout()
+        self.xaxis_grid.setColumnStretch(3, 1)
         self.xaxis_grid.addWidget(self.lbl_xtitle, 0, 0, 1, 1)
         self.xaxis_grid.addWidget(self.lin_xtitle, 0, 1, 1, 2)
 
@@ -45,6 +63,7 @@ class LayoutDialog(QMainWindow):
         self.lin_ytitle = QLineEdit('')
 
         self.yaxis_grid = QGridLayout()
+        self.yaxis_grid.setColumnStretch(3, 1)
         self.yaxis_grid.addWidget(self.lbl_ytitle, 0, 0, 1, 1)
         self.yaxis_grid.addWidget(self.lin_ytitle, 0, 1, 1, 2)
 
@@ -63,10 +82,37 @@ class LayoutDialog(QMainWindow):
         self.setCentralWidget(centralWidget)
         self.show()
 
-    def choose_font(self):
-        w = QFontDialog()
-        print(w)
+        self.title_group.toggle_button.click()
+        self.xaxis_group.toggle_button.click()
+        self.yaxis_group.toggle_button.click()
+
+    def choose_font(self, target):
+        font, ok = QFontDialog.getFont()
+        if ok:
+            atts = font.key().split(',')
+            f_family = atts[0]
+            f_size = atts[1]
+            f_style = atts[-1]
+            if target=='title':
+                self.title_family = f_family
+                self.title_size = f_size
+
+    def choose_color(self, target):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            red = color.red()
+            green = color.green()
+            blue = color.blue()
+            alpha = color.alpha()
+            rgb_color = 'rgb('+str(red)+','+str(green)+','+str(blue)+','+str(alpha)+')'
+            if target=='title':
+                self.title_color = rgb_color
 
     def layout_update(self):
         """Reads fields and updates parent's layout"""
-        pass
+        changes = AutoDictionary()
+        changes['title']['text'] = self.lin_titletext.text()
+        changes['title']['font']['family'] = self.title_family
+        changes['title']['font']['size'] = self.title_size
+        changes['title']['font']['color'] = self.title_color
+        self.parent.layout_update(changes=changes)
