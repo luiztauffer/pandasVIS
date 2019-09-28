@@ -55,6 +55,13 @@ class Joyplot(QWidget):
     def layout_update(self, changes):
         """Updates figure layout with dictionary in changes"""
         self.figure['layout'].update(changes)
+        #self.figure['layout']['title'].update(changes['title'])
+        # Saves html to temporary folder
+        plt_plot(figure_or_data=self.figure,
+                 filename=os.path.join(self.parent.temp_dir, self.name+'.html'),
+                 auto_open=False)
+        url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir, self.name+'.html'))
+        self.update_html(url=url)
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
@@ -103,6 +110,9 @@ class BusyThread(QtCore.QThread):
             self.obj.figure = make_joyplot(df=self.w.df,
                                            y_groups=self.w.y_groups,
                                            group_by=self.w.group_by)
+
+            self.obj.parent.console.push_vars({'fig': self.obj.figure})
+
             # Saves html to temporary folder
             plt_plot(figure_or_data=self.obj.figure,
                      filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
