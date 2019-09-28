@@ -48,14 +48,14 @@ lay_base['xaxis']['showexponent'] = "all"
 lay_base['xaxis']['exponentformat'] = "B"
 lay_base['xaxis']['tickformat'] = ""
 lay_base['xaxis']['showline'] = False
-lay_base['xaxis']['linecolor'] = "rgb(27,27,27,255)"
 lay_base['xaxis']['linewidth'] = 1
+lay_base['xaxis']['linecolor'] = "rgb(27,27,27,255)"
 lay_base['xaxis']['showgrid'] = False
-lay_base['xaxis']['gridcolor'] = "rgb(238, 238, 238)"
 lay_base['xaxis']['gridwidth'] = 1
+lay_base['xaxis']['gridcolor'] = "rgb(238,238,238,255)"
 lay_base['xaxis']['zeroline'] = False
-lay_base['xaxis']['zerolinecolor'] = "rgb(68, 68, 68)"
 lay_base['xaxis']['zerolinewidth'] = 1
+lay_base['xaxis']['zerolinecolor'] = "rgb(68,68,68,255)"
 lay_base['xaxis']['side'] = "bottom"
 
 lay_base['yaxis']['visible'] = True
