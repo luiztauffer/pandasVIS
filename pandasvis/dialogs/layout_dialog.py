@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import (QMainWindow, QPushButton, QWidget, QGridLayout,
                              QStyle, QGroupBox, QLineEdit, QCheckBox,
                              QVBoxLayout, QHBoxLayout, QLabel, QColorDialog,
-                             QComboBox)
+                             QComboBox, QScrollArea)
 from pandasvis.utils.classes import CollapsibleBox
 from pandasvis.utils.functions import AutoDictionary
 
@@ -30,13 +30,8 @@ class LayoutDialog(QMainWindow):
         self.bt_uplayout.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
         self.bt_uplayout.clicked.connect(self.layout_update)
 
-        self.bt_close = QPushButton('Close')
-        self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
-        #self.bt_close.clicked.connect(self.choose_font)
-
         self.hbox = QHBoxLayout()
         self.hbox.addWidget(self.bt_uplayout)
-        self.hbox.addWidget(self.bt_close)
         self.hbox.addWidget(QWidget())
         self.hbox.addStretch()
 
@@ -49,6 +44,7 @@ class LayoutDialog(QMainWindow):
         self.combo_layhover.addItem('False')
         self.chk_layautosize = QCheckBox('autosize')
         self.chk_layautosize.setChecked(True)
+        self.chk_layautosize.stateChanged.connect(self.toggle_enable_fields)
         self.lbl_laywidth = QLabel('width:')
         self.lin_laywidth = QLineEdit('700')
         self.lin_laywidth.setValidator(self.onlyInt)
@@ -245,6 +241,7 @@ class LayoutDialog(QMainWindow):
         self.lbl_xtickangle = QLabel('tick angle:')
         self.chk_xtickangle = QCheckBox('auto')
         self.chk_xtickangle.setChecked(True)
+        self.chk_xtickangle.stateChanged.connect(self.toggle_enable_fields)
         self.lin_xtickangle = QLineEdit('0')
         self.lin_xtickangle.setValidator(self.onlyInt)
         self.lbl_xtickprefix = QLabel('tick prefix:')
@@ -278,6 +275,7 @@ class LayoutDialog(QMainWindow):
         self.lin_xtickformat = QLineEdit('')
         self.chk_xshowline = QCheckBox('show line')
         self.chk_xshowline.setChecked(False)
+        self.chk_xshowline.stateChanged.connect(self.toggle_enable_fields)
         self.lbl_xlinewid = QLabel('line width:')
         self.lin_xlinewid = QLineEdit('1')
         self.lin_xlinewid.setValidator(self.onlyInt)
@@ -294,6 +292,7 @@ class LayoutDialog(QMainWindow):
         self.lin_xlinea.setValidator(self.onlyInt)
         self.chk_xshowgrid = QCheckBox('show grid')
         self.chk_xshowgrid.setChecked(False)
+        self.chk_xshowgrid.stateChanged.connect(self.toggle_enable_fields)
         self.lbl_xgridwid = QLabel('grid width:')
         self.lin_xgridwid = QLineEdit('1')
         self.lin_xgridwid.setValidator(self.onlyInt)
@@ -310,6 +309,7 @@ class LayoutDialog(QMainWindow):
         self.lin_xgrida.setValidator(self.onlyInt)
         self.chk_xzeroline = QCheckBox('show zero-line')
         self.chk_xzeroline.setChecked(False)
+        self.chk_xzeroline.stateChanged.connect(self.toggle_enable_fields)
         self.lbl_xzerolinewid = QLabel('zero-line width:')
         self.lin_xzerolinewid = QLineEdit('1')
         self.lin_xzerolinewid.setValidator(self.onlyInt)
@@ -428,25 +428,60 @@ class LayoutDialog(QMainWindow):
         self.yaxis_group.setContentLayout(self.yaxis_grid)
 
         # Main window layout
-        self.vbox = QVBoxLayout()
-        self.vbox.addWidget(self.general_group)
-        self.vbox.addWidget(self.title_group)
-        self.vbox.addWidget(self.xaxis_group)
-        self.vbox.addWidget(self.yaxis_group)
-        self.vbox.addStretch()
-        self.vbox.addLayout(self.hbox)
+        self.vbox1 = QVBoxLayout()
+        self.vbox1.addWidget(self.general_group)
+        self.vbox1.addWidget(self.title_group)
+        self.vbox1.addWidget(self.xaxis_group)
+        self.vbox1.addWidget(self.yaxis_group)
+        self.vbox1.addStretch()
+        scroll_aux = QWidget()
+        scroll_aux.setLayout(self.vbox1)
+        scroll = QScrollArea()
+        scroll.setWidget(scroll_aux)
+        scroll.setWidgetResizable(True)
 
-        centralWidget = QWidget()
-        centralWidget.setLayout(self.vbox)
-        self.setCentralWidget(centralWidget)
+        self.vbox2 = QVBoxLayout()
+        self.vbox2.addLayout(self.hbox)
+        self.vbox2.addWidget(scroll)
+
+        centralw = QWidget()
+        centralw.setLayout(self.vbox2)
+        self.setCentralWidget(centralw)
         self.show()
 
         self.init_attributes()
+        self.toggle_enable_fields()
 
         #self.general_group.toggle_button.click()
         #self.title_group.toggle_button.click()
         self.xaxis_group.toggle_button.click()
         #self.yaxis_group.toggle_button.click()
+
+    def toggle_enable_fields(self):
+        # General
+        self.lin_laywidth.setEnabled(not self.chk_layautosize.isChecked())
+        self.lin_layheight.setEnabled(not self.chk_layautosize.isChecked())
+
+        # X axis
+        self.lin_xtickangle.setEnabled(not self.chk_xtickangle.isChecked())
+        self.lin_xlinewid.setEnabled(self.chk_xshowline.isChecked())
+        self.btn_xlinec.setEnabled(self.chk_xshowline.isChecked())
+        self.lin_xliner.setEnabled(self.chk_xshowline.isChecked())
+        self.lin_xlineg.setEnabled(self.chk_xshowline.isChecked())
+        self.lin_xlineb.setEnabled(self.chk_xshowline.isChecked())
+        self.lin_xlinea.setEnabled(self.chk_xshowline.isChecked())
+        self.lin_xgridwid.setEnabled(self.chk_xshowgrid.isChecked())
+        self.btn_xgridc.setEnabled(self.chk_xshowgrid.isChecked())
+        self.lin_xgridr.setEnabled(self.chk_xshowgrid.isChecked())
+        self.lin_xgridg.setEnabled(self.chk_xshowgrid.isChecked())
+        self.lin_xgridb.setEnabled(self.chk_xshowgrid.isChecked())
+        self.lin_xgrida.setEnabled(self.chk_xshowgrid.isChecked())
+        self.lin_xzerolinewid.setEnabled(self.chk_xzeroline.isChecked())
+        self.btn_xzerolinec.setEnabled(self.chk_xzeroline.isChecked())
+        self.lin_xzeroliner.setEnabled(self.chk_xzeroline.isChecked())
+        self.lin_xzerolineg.setEnabled(self.chk_xzeroline.isChecked())
+        self.lin_xzerolineb.setEnabled(self.chk_xzeroline.isChecked())
+        self.lin_xzerolinea.setEnabled(self.chk_xzeroline.isChecked())
 
     def choose_color(self, target):
         color = QColorDialog.getColor()
@@ -502,8 +537,8 @@ class LayoutDialog(QMainWindow):
         else:
             changes['hovermode'] = str(self.combo_layhover.currentText())
         changes['autosize'] = self.chk_layautosize.isChecked()
-        changes['width'] = int(self.lin_laywidth.text())
-        changes['height'] = int(self.lin_layheight.text())
+        changes['width'] = int(self.lin_laywidth.text()) if self.lin_laywidth.isEnabled() else None
+        changes['height'] = int(self.lin_layheight.text()) if self.lin_layheight.isEnabled() else None
         changes['font']['family'] = str(self.combo_layfont.currentText())
         changes['font']['size'] = int(self.lin_layfont.text())
         r = str(self.lin_layfontr.text())
@@ -532,6 +567,64 @@ class LayoutDialog(QMainWindow):
         b = str(self.lin_titleb.text())
         a = str(self.lin_titlea.text())
         changes['title']['font']['color'] = 'rgb('+r+','+g+','+b+','+a+')'
+
+        # X axis
+        changes['xaxis']['visible'] = self.chk_xvisible.isChecked()
+        r = str(self.lin_xr.text())
+        g = str(self.lin_xg.text())
+        b = str(self.lin_xb.text())
+        a = str(self.lin_xa.text())
+        changes['xaxis']['color'] = 'rgb('+r+','+g+','+b+','+a+')'
+        #changes['xaxis']['title']['text'] = str(self.lin_xtitletext.text())
+        changes['xaxis']['title']['font']['family'] = str(self.combo_xtitlefont.currentText())
+        changes['xaxis']['title']['font']['size'] = int(self.lin_xtitlefont.text())
+        r = str(self.lin_xtitler.text())
+        g = str(self.lin_xtitleg.text())
+        b = str(self.lin_xtitleb.text())
+        a = str(self.lin_xtitlea.text())
+        changes['xaxis']['title']['font']['color'] = 'rgb('+r+','+g+','+b+','+a+')'
+        changes['xaxis']['type'] = str(self.combo_xtype.currentText())
+        changes['xaxis']['autorange'] = self.chk_xautorange.isChecked()
+        changes['xaxis']['nticks'] = int(self.lin_xnticks.text())
+        changes['xaxis']['ticks'] = str(self.combo_xticks.currentText())
+        changes['xaxis']['ticklen'] = int(self.lin_xticklen.text())
+        changes['xaxis']['tickwidth'] = int(self.lin_xtickwid.text())
+        r = str(self.lin_xtickr.text())
+        g = str(self.lin_xtickg.text())
+        b = str(self.lin_xtickb.text())
+        a = str(self.lin_xticka.text())
+        changes['xaxis']['tickcolor'] = 'rgb('+r+','+g+','+b+','+a+')'
+        changes['xaxis']['showticklabels'] = self.chk_xshowticklabels.isChecked()
+        changes['xaxis']['tickangle'] = None if self.chk_xtickangle.isChecked else int(self.lin_xtickangle.text())
+        changes['xaxis']['tickprefix'] = str(self.lin_xtickprefix.text())
+        changes['xaxis']['showtickprefix'] = str(self.combo_xshowtickprefix.currentText())
+        changes['xaxis']['ticksuffix'] = str(self.lin_xticksufix.text())
+        changes['xaxis']['showticksuffix'] = str(self.combo_xshowticksufix.currentText())
+        changes['xaxis']['showexponent'] = str(self.combo_xshowexponent.currentText())
+        changes['xaxis']['exponentformat'] = str(self.combo_xexponent.currentText())
+        changes['xaxis']['tickformat'] = str(self.lin_xtickformat.text())
+        changes['xaxis']['showline'] = self.chk_xshowline.isChecked()
+        changes['xaxis']['linewidth'] = int(self.lin_xlinewid.text())
+        r = str(self.lin_xliner.text())
+        g = str(self.lin_xlineg.text())
+        b = str(self.lin_xlineb.text())
+        a = str(self.lin_xlinea.text())
+        changes['xaxis']['linecolor'] = 'rgb('+r+','+g+','+b+','+a+')'
+        changes['xaxis']['showgrid'] = self.chk_xshowgrid.isChecked()
+        changes['xaxis']['gridwidth'] = int(self.lin_xgridwid.text())
+        r = str(self.lin_xgridr.text())
+        g = str(self.lin_xgridg.text())
+        b = str(self.lin_xgridb.text())
+        a = str(self.lin_xgrida.text())
+        changes['xaxis']['gridcolor'] = 'rgb('+r+','+g+','+b+','+a+')'
+        changes['xaxis']['zeroline'] = self.chk_xzeroline.isChecked()
+        changes['xaxis']['zerolinewidth'] = int(self.lin_xzerolinewid.text())
+        r = str(self.lin_xzeroliner.text())
+        g = str(self.lin_xzerolineg.text())
+        b = str(self.lin_xzerolineb.text())
+        a = str(self.lin_xzerolinea.text())
+        changes['xaxis']['zerolinecolor'] = 'rgb('+r+','+g+','+b+','+a+')'
+        changes['xaxis']['side'] = str(self.combo_xside.currentText())
 
         # Run layout update
         self.parent.layout_update(changes=changes)

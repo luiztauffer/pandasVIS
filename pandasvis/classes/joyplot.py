@@ -55,7 +55,12 @@ class Joyplot(QWidget):
     def layout_update(self, changes):
         """Updates figure layout with dictionary in changes"""
         self.figure['layout'].update(changes)
-        #self.figure['layout']['title'].update(changes['title'])
+        nSubs = sum(['xaxis' in i for i in self.figure['layout']])
+        for i in range(nSubs):
+            xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
+            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
+            self.figure['layout'][xname].update(changes['xaxis'])
+            self.figure['layout'][yname].update(changes['yaxis'])
         # Saves html to temporary folder
         plt_plot(figure_or_data=self.figure,
                  filename=os.path.join(self.parent.temp_dir, self.name+'.html'),
@@ -79,6 +84,8 @@ class Joyplot(QWidget):
                 obj.parent.new_tab_top(obj, obj.name)
                 # Writes at Logger
                 obj.parent.write_to_logger(txt=self.name + " ready!")
+
+                self.parent.console.push_vars({'fig': obj.figure})
             else:
                 obj.parent.write_to_logger(txt="ERROR:")
                 obj.parent.write_to_logger(txt=str(error))
