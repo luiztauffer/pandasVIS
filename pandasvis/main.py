@@ -26,6 +26,7 @@ class Application(QMainWindow):
 
         # Initialize GUI elements
         self.init_gui()
+        self.max_fig = False
 
         # Opens file (if argument was passed)
         if filename is not None:
@@ -253,6 +254,16 @@ class Application(QMainWindow):
         time = datetime.datetime.now().time().strftime("%H:%M:%S")
         full_txt = "[" + time + "]    " + txt
         self.logger.append(full_txt)
+
+    def toggle_max_figure(self):
+        if self.max_fig:
+            #self.left_widget.setFixedWidth(80)
+            self.left_widget.resize(self.left_widget.sizeHint())
+            self.max_fig = False
+        else:
+            #self.left_widget.setFixedWidth(0)
+            self.left_widget.resize(0, self.left_widget.height)
+            self.max_fig = True
 
     def mark_all(self):
         """Iterate over all nodes of the tree and marks them."""

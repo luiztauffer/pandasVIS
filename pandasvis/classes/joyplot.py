@@ -33,14 +33,19 @@ class Joyplot(QWidget):
         self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
         self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
 
+        self.bt_maxfig = QPushButton('Expand / Retract')
+        self.bt_maxfig.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMaxButton))
+        self.bt_maxfig.clicked.connect(self.parent.toggle_max_figure)
+
         self.bt_layout = QPushButton('Layout')
         self.bt_layout.setIcon(self.style().standardIcon(QStyle.SP_FileDialogListView))
         self.bt_layout.clicked.connect(self.layout_dialog)
 
         self.grid1 = QGridLayout()
         self.grid1.setColumnStretch(0, 1)
-        self.grid1.addWidget(QWidget(), 0, 0, 1, 4)
-        self.grid1.addWidget(self.bt_layout, 0, 4, 1, 1)
+        self.grid1.addWidget(QWidget(), 0, 0, 1, 3)
+        self.grid1.addWidget(self.bt_layout, 0, 3, 1, 1)
+        self.grid1.addWidget(self.bt_maxfig, 0, 4, 1, 1)
         self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
 
         self.vbox = QVBoxLayout()
