@@ -13,10 +13,10 @@ dependencies:
 - jupyter
 - matplotlib
 - pyqt
-- pyqtgraph
+- qtconsole
 - pandas-profiling
 - plotly
-- python-cufflinks
 - scikit-learn
+- ipywidgets
 - pip:
   - -e .
