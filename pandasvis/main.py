@@ -259,12 +259,14 @@ class Application(QMainWindow):
 
     def toggle_max_figure(self):
         if self.max_fig:
-            #self.left_widget.setFixedWidth(80)
+            self.left_widget.setMaximumWidth(1000)
             self.left_widget.resize(self.left_widget.sizeHint())
+            self.tabs_bottom.setMaximumHeight(1000)
+            self.tabs_bottom.resize(self.tabs_bottom.sizeHint())
             self.max_fig = False
         else:
-            #self.left_widget.setFixedWidth(0)
-            self.left_widget.resize(0, self.left_widget.height)
+            self.left_widget.setMaximumWidth(0)
+            self.tabs_bottom.setMaximumHeight(0)
             self.max_fig = True
 
     def mark_all(self):
