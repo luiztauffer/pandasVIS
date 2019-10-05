@@ -1,16 +1,19 @@
 from PyQt5 import QtCore
+from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
 from pandasvis.dialogs.layout_dialog import LayoutDialog
 from pandasvis.utils.functions import AutoDictionary
 from pandasvis.utils.styles import palettes
+from pandasvis.utils.layouts import lay_base
 
+import plotly
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from plotly import tools
+import nbformat as nbf
 from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
@@ -75,22 +78,48 @@ class Joyplot(QWidget):
 
     def update_html(self, url):
         """Loads temporary HTML file and render it."""
-        self.html.load(url)
+        self.html.load(QtCore.QUrl(url))
         self.html.show()
 
     def make_plot(self):
         """Makes object to be placed in new tab."""
         def finish_thread(obj, error):
             if error is None:
-                # Load html to object
-                url = QtCore.QUrl.fromLocalFile(os.path.join(obj.parent.temp_dir, obj.name+'.html'))
-                obj.update_html(url=url)
-                # Makes new tab on parent and load it with new object
+                # # Load html to object
+                # url = QtCore.QUrl.fromLocalFile(os.path.join(obj.parent.temp_dir, obj.name+'.html'))
+                # obj.update_html(url=url)
+                # # Makes new tab on parent and load it with new object
+                # obj.parent.new_tab_top(obj, obj.name)
+                # # Writes at Logger
+                # obj.parent.write_to_logger(txt=self.name + " ready!")
+                #
+                # self.parent.console.push_vars({'fig': obj.figure})
+
+                # Write Figure + ipywidgets to a .ipynb file
+                nb = nbf.v4.new_notebook()
+                code = """
+                    import plotly
+                    import os
+                    from pandasvis.other.fig_controls import DashBoard
+
+                    fpath = os.path.join(r'""" + obj.parent.temp_dir + """', '""" + obj.name+'.json' + """')
+                    fig = plotly.io.read_json(fpath)
+                    fig_widget = plotly.graph_objs.FigureWidget(fig)
+                    dashboard = DashBoard(fig_widget)
+                    dashboard"""
+                nb['cells'] = [nbf.v4.new_code_cell(code)]
+                nbf.write(nb, obj.name+'.ipynb')
+
+                # Run instance of Voila with the just saved .ipynb file
+                self.voilathread = voilaThread(parent=obj, port=7000)
+                self.voilathread.start()
+
+                # Load Voila instance on GUI
+                obj.update_html('http://localhost:7000/')
+
                 obj.parent.new_tab_top(obj, obj.name)
-                # Writes at Logger
                 obj.parent.write_to_logger(txt=self.name + " ready!")
 
-                self.parent.console.push_vars({'fig': obj.figure})
             else:
                 obj.parent.write_to_logger(txt="ERROR:")
                 obj.parent.write_to_logger(txt=str(error))
@@ -108,6 +137,20 @@ class Joyplot(QWidget):
             thread.start()
 
 
+class voilaThread(QtCore.QThread):
+    def __init__(self, parent, port):
+        super().__init__()
+        self.parent = parent
+        self.port = port
+
+    def run(self):
+        os.system("voila "+self.parent.name+'.ipynb --no-browser --port '+str(self.port))
+
+    #def stop(self):
+    #    import signal
+    #    os.system(signal.SIGINT)
+
+
 # Runs conversion function, useful to wait for thread
 class BusyThread(QtCore.QThread):
     def __init__(self, w, obj):
@@ -122,13 +165,12 @@ class BusyThread(QtCore.QThread):
             self.obj.figure = make_joyplot(df=self.w.df,
                                            y_groups=self.w.y_groups,
                                            group_by=self.w.group_by)
-
-            self.obj.parent.console.push_vars({'fig': self.obj.figure})
+            self.obj.figure.write_json(os.path.join(self.obj.parent.temp_dir, self.obj.name+'.json'))
 
             # Saves html to temporary folder
-            plt_plot(figure_or_data=self.obj.figure,
-                     filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
-                     auto_open=False)
+            # plt_plot(figure_or_data=self.obj.figure,
+            #          filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
+            #          auto_open=False)
             self.error = None
         except Exception as error:
             self.error = error
@@ -160,6 +202,7 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
         figs = tools.make_subplots(rows=int(np.ceil(nVars/2.)), cols=2, print_grid=False)
     else:
         figs = tools.make_subplots(rows=1, cols=1, print_grid=False)
+    figs['layout'].update(lay_base)
 
     # Iterations to generate curves and estimate best separation distances
     yy = AutoDictionary()
@@ -243,21 +286,18 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
                 figs.add_trace(go.Scatter(trace_base), row=(kk//2+1), col=(kk % 2+1))
                 figs.add_trace(go.Scatter(trace_pdf), row=(kk//2+1), col=(kk % 2+1))
 
-        if kk == 0:
-            li = ''
-        else:
-            li = str(kk+1)
-
-        figs['layout']["xaxis"+li].update({
+        xname = 'xaxis' if kk == 0 else 'xaxis'+str(kk+1)
+        yname = 'yaxis' if kk == 0 else 'yaxis'+str(kk+1)
+        figs['layout'][xname].update({
+            "title": {'text': x_var, 'font': {"family": "Balto"}},
             "type": "linear",
-            #"dtick": 5,
             "range": [xx_min, xx_max],
-            "title": x_var,
             "showgrid": True,
             "showline": False,
             "zeroline": False
         })
-        figs['layout']["yaxis"+li].update({
+        figs['layout'][yname].update({
+            "title": {'font': {"family": "Balto"}},
             "type": "linear",
             "ticktext": groups_names,
             "tickvals": [-i*y_peaks[x_var] for i in range(len(groups_names))],
@@ -267,10 +307,5 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
             "gridcolor": "rgb(255,255,255)",
             "gridwidth": 1
         })
-    figs['layout'].update({
-        "font": {"family": "Balto"},
-        "hovermode": "closest",
-        "plot_bgcolor": "rgb(255,255,255)"
-    })
 
     return figs

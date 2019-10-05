@@ -176,7 +176,7 @@ class Application(QMainWindow):
         obj = module(self)
         # Check how many instances of same class already exist
         nInst = sum([item.menu_name == obj.menu_name for item in self.instances_list])
-        obj.name += ' ' + str(nInst)
+        obj.name += '_' + str(nInst)
         obj.make_plot()
         self.instances_list.append(obj)
 
@@ -241,6 +241,8 @@ class Application(QMainWindow):
     def close_tab_top(self, object):
         """Closes tab and removes associated objects"""
         name = object.name
+        # Stops voilaThread
+        object.voilathread.terminate()
         # Removes tab
         curr_ind = self.tabs_top.children()[0].currentIndex()
         self.tabs_top.removeTab(curr_ind)
@@ -316,6 +318,23 @@ class Application(QMainWindow):
         msg.setInformativeText("<a href='https://github.com/luiztauffer/pandasVIS'>PandasVIS Github page</a>")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
+
+
+
+class dashViewer(QWidget):
+    def __init__(self, parent, url):
+        super().__init__()
+        self.parent = parent
+        self.web = QWebEngineView()
+        self.web.load(QtCore.QUrl(url))
+        self.web.show()
+
+        self.btn1 = QPushButton('Button')
+        self.lay = QVBoxLayout(self)
+        self.lay.addWidget(self.web)
+        self.lay.addWidget(self.btn1)
+        self.setLayout(self.lay)
+
 
 
 if __name__ == '__main__':
