@@ -1,9 +1,8 @@
 from PyQt5 import QtCore
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
 
-from pandasvis.classes.module_template import ModuleTemplate
+from pandasvis.classes.base_figure import BaseFigure
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
 from pandasvis.utils.functions import AutoDictionary
 from pandasvis.utils.styles import palettes
@@ -20,7 +19,7 @@ import pandas as pd
 import os
 
 
-class Joyplot(ModuleTemplate):
+class Joyplot(BaseFigure):
     menu_parent = "Tabular"
     menu_name = "Joyplot"
 

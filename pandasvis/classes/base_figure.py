@@ -6,7 +6,7 @@ import os
 import nbformat as nbf
 
 
-class ModuleTemplate(QWidget):
+class BaseFigure(QWidget):
     menu_parent = "Tabular"  # "Tabular", "Time Series"
     menu_name = "ModuleTemplate"
 

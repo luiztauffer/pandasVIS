@@ -1,10 +1,11 @@
 from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
-from PyQt5.QtWebEngineWidgets import QWebEngineView
 
+from pandasvis.classes.base_figure import BaseFigure
 from pandasvis.dialogs.filter_variables import FilterVariablesDialog
 from pandasvis.utils.styles import palettes
+from pandasvis.utils.layouts import lay_base
 
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
@@ -15,92 +16,39 @@ import pandas as pd
 import os
 
 
-class ScatterMatrix(QWidget):
+class ScatterMatrix(BaseFigure):
     menu_parent = "Tabular"
-    menu_name = "Scatter Matrix"
+    menu_name = "ScatterMatrix"
 
     def __init__(self, parent):
-        """Produces a scatter matrix plot with selected variables."""
-        super().__init__()
-        self.parent = parent
-        self.name = "Scatter Matrix"
+        """Module to create Joyplots."""
+        super().__init__(parent)
 
-        self.html = QWebEngineView()
+    def make_figure(self, *args, **kwargs):
+        """Custom code to produce figure to be placed in GUI."""
+        fig = scatter_matrix(*args, **kwargs)
+        return fig
 
-        self.bt_close = QPushButton('Close')
-        self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
-        self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
-
-        self.grid1 = QGridLayout()
-        self.grid1.setColumnStretch(0, 1)
-        self.grid1.addWidget(QWidget(), 0, 0, 1, 5)
-        self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
-
-        self.vbox = QVBoxLayout()
-        self.vbox.addLayout(self.grid1)
-        self.vbox.addWidget(self.html)
-        self.setLayout(self.vbox)
-
-
-    def update_html(self, url):
-        """Loads temporary HTML file and render it."""
-        self.html.load(url)
-        self.html.show()
-
-    def make_plot(self):
-        """Makes object to be placed in new tab."""
-        def finish_thread(obj, error):
-            if error is None:
-                # Load html to object
-                url = QtCore.QUrl.fromLocalFile(os.path.join(obj.parent.temp_dir, obj.name+'.html'))
-                obj.update_html(url=url)
-                # Makes new tab on parent and load it with new object
-                obj.parent.new_tab_top(obj, obj.name)
-                # Writes at Logger
-                obj.parent.write_to_logger(txt=self.name + " ready!")
-            else:
-                obj.parent.write_to_logger(txt="ERROR:")
-                obj.parent.write_to_logger(txt=str(error))
-
+    def pre_run(self):
+        """
+        Custom code to preprocess dataframes and generate the keyword arguments
+        needed in self.make_figure. It can contain any process you want, dialogs
+        for user interface, etc...
+        """
         # Select variables from Dataframe
         self.parent.update_selected_primary()
         df = self.parent.df[self.parent.selected_primary]
         # Open filter by condition dialog
         w = FilterVariablesDialog(parent=self, df=df)
         if w.value == 1:
-            self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
-            self.parent.tabs_bottom.setCurrentIndex(1)
-            thread = BusyThread(w, self)
-            thread.finished.connect(lambda: finish_thread(self, error=thread.error))
-            thread.start()
+            args = [df]
+            kwargs = {'group_by': w.group_by}
+            return args, kwargs
 
 
-# Runs conversion function, useful to wait for thread
-class BusyThread(QtCore.QThread):
-    def __init__(self, w, obj):
-        super().__init__()
-        self.w = w
-        self.obj = obj
-        self.error = None
-
-    def run(self):
-        try:
-            # Generate a dictionary of plotly plots
-            self.obj.figure = custom_scatter_matrix(df=self.w.df,
-                                                    group_by=self.w.group_by)
-            # Saves html to temporary folder
-            plt_plot(figure_or_data=self.obj.figure,
-                     filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
-                     auto_open=False)
-            self.error = None
-        except Exception as error:
-            self.error = error
-
-
-def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
-                          hist_type='kde', kde_width=None, group_by=None,
-                          palette=None, **iplot_kwargs):
-
+def scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
+                   hist_type='kde', kde_width=None, group_by=None,
+                   palette=None, **iplot_kwargs):
     # Color palette
     if palette is None:
         palette = palettes['Tableau10']
@@ -124,6 +72,7 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
 
     nVars = len(columns)
     figs = tools.make_subplots(rows=nVars, cols=nVars, print_grid=False)
+    figs['layout'].update(lay_base)
 
     for cgrp, grp in enumerate(groups_names):
         if grp == 'all':
@@ -183,23 +132,15 @@ def custom_scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
                     figs.add_trace(fig, row=ci+1, col=cj+1)
                 # Y labels
                 if cj == 0:
-                    figs['layout']['yaxis'+str(ii+1)].update(title=i)
+                    figs['layout']['yaxis'+str(ii+1)].update({"title": {'text': i}})
 
         # Legend
         legend_layout = go.layout.Legend(
             font=dict(size=15, color="black"),
         )
-        figs.layout.update(legend=legend_layout)
+        figs['layout'].update(legend=legend_layout)
         # Title
-        title_layout = go.layout.Title(
-            text=['Grouped by: '+group_by if group_by is not None else None][0],
-            xref="paper",
-            x=0,
-        )
-        figs.layout.update(title=title_layout)
-
-        # figs['layout']['xaxis1'].update(anchor='x2')
-        # figs['layout']['xaxis2'].update(anchor='x2')
-        # figs['layout']['xaxis3'].update(anchor='x2')
+        title_text=['Grouped by: '+group_by if group_by is not None else None][0]
+        figs.layout.update({"title": {'text': title_text}})
 
     return figs
