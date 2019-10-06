@@ -135,7 +135,64 @@ class DashBoard(VBox):
         widgets.interactive_output(self.set_xaxis, xaxis_controls)
 
         # Y axis ---------------------------------------------------------------
-        vb_yaxis = VBox()
+        chk_yaxis_visible = widgets.Checkbox(
+            value=fig.layout.yaxis.visible, description='Visible')
+        clr_yaxis = widgets.ColorPicker(concise=True, value=fig.layout.yaxis.color)
+        hb0_yaxis = HBox([chk_yaxis_visible, clr_yaxis])
+
+        txt_yaxis_fontsize = widgets.FloatText(value=fig.layout.yaxis.titlefont.size, layout=field_lay)
+        drd_yaxis_fontfamily = widgets.Dropdown(
+            options=fonts_list, layout=field_lay,
+            value=fonts_names.index(fig.layout.yaxis.titlefont.family)+1)
+        drd_yaxis_fontfamily.observe(self.set_yaxis_titlefontfamily, names='label')
+        clr_yaxis_font = widgets.ColorPicker(concise=True, value=fig.layout.yaxis.titlefont.color)
+        hb1_yaxis = HBox([widgets.Label('font:'), txt_yaxis_fontsize,
+                          drd_yaxis_fontfamily, clr_yaxis_font])
+
+        drd_yaxis_ticks = widgets.Dropdown(
+            options=tickoptions_list, layout=field_lay,
+            value=tickoptions_names.index(fig.layout.yaxis.ticks)+1)
+        drd_yaxis_ticks.observe(self.set_yaxis_ticks, names='label')
+        txt_yaxis_nticks = widgets.IntText(value=fig.layout.yaxis.nticks, layout=field_lay)
+        hb2_yaxis = HBox([widgets.Label('ticks:'), drd_yaxis_ticks, txt_yaxis_nticks])
+
+        txt_yaxis_ticklen = widgets.FloatText(value=fig.layout.yaxis.ticklen, layout=field_lay)
+        txt_yaxis_tickwid = widgets.FloatText(value=fig.layout.yaxis.tickwidth, layout=field_lay)
+        clr_yaxis_tick = widgets.ColorPicker(concise=True, value=fig.layout.yaxis.tickcolor)
+        hb3_yaxis = HBox([widgets.Label('ticks len/wid:'), txt_yaxis_ticklen,
+                          txt_yaxis_tickwid, clr_yaxis_tick])
+
+        chk_yaxis_showticklabels = widgets.Checkbox(
+            value=fig.layout.yaxis.showticklabels, description='Show tick labels')
+        chk_yaxis_tickangle = widgets.Checkbox(
+            value=not isinstance(fig.layout.yaxis.tickangle, (int, float)), description='auto')
+        self.txt_yaxis_tickangle = widgets.FloatText(
+            value=fig.layout.yaxis.tickangle if fig.layout.yaxis.tickangle != 'auto' else 0,
+            layout=field_lay)
+        hb4_yaxis = HBox([widgets.Label('ticks angle:'), chk_yaxis_tickangle,
+                          self.txt_yaxis_tickangle])
+
+
+        vb_yaxis = VBox([hb0_yaxis, hb1_yaxis, hb2_yaxis, hb3_yaxis,
+                         chk_yaxis_showticklabels, hb4_yaxis])
+
+        yaxis_controls = {
+            'visible': chk_yaxis_visible,
+            'color': clr_yaxis,
+            'title_fontsize': txt_yaxis_fontsize,
+            'title_fontcolor': clr_yaxis_font,
+            'nticks': txt_yaxis_nticks,
+            'ticklen': txt_yaxis_ticklen,
+            'tickwid': txt_yaxis_tickwid,
+            'tickcolor': clr_yaxis_tick,
+            'showticklabels': chk_yaxis_showticklabels,
+            'tickangleauto': chk_yaxis_tickangle,
+            'tickangle': self.txt_yaxis_tickangle,
+        }
+        widgets.interactive_output(self.set_yaxis, yaxis_controls)
+
+        # Export ---------------------------------------------------------------
+        
 
         # Organize buttons layout ----------------------------------------------
         self.tab_nest = widgets.Tab()
@@ -193,7 +250,6 @@ class DashBoard(VBox):
                   tickangle):
         for i in range(self.nSubs):
             xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
-            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
             curr = getattr(self.fig.layout, xname)
             curr.visible = visible
             curr.color = color
@@ -214,13 +270,45 @@ class DashBoard(VBox):
     def set_xaxis_titlefontfamily(self, change):
         for i in range(self.nSubs):
             xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
-            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
             curr = getattr(self.fig.layout, xname)
             curr.titlefont.family = change['new']
 
     def set_xaxis_ticks(self, change):
         for i in range(self.nSubs):
             xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
-            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
             curr = getattr(self.fig.layout, xname)
+            curr.ticks = change['new']
+
+    def set_yaxis(self, visible, color, title_fontsize, title_fontcolor, nticks,
+                  ticklen, tickwid, tickcolor, showticklabels, tickangleauto,
+                  tickangle):
+        for i in range(self.nSubs):
+            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
+            curr = getattr(self.fig.layout, yname)
+            curr.visible = visible
+            curr.color = color
+            curr.titlefont.size = title_fontsize
+            curr.titlefont.color = title_fontcolor
+            curr.nticks = nticks
+            curr.ticklen = ticklen
+            curr.tickwidth = tickwid
+            curr.tickcolor = tickcolor
+            curr.showticklabels = showticklabels
+            if tickangleauto:
+                curr.tickangle = None
+                self.txt_yaxis_tickangle.disabled = True
+            else:
+                self.txt_yaxis_tickangle.disabled = False
+                curr.tickangle = self.txt_yaxis_tickangle.value
+
+    def set_yaxis_titlefontfamily(self, change):
+        for i in range(self.nSubs):
+            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
+            curr = getattr(self.fig.layout, yname)
+            curr.titlefont.family = change['new']
+
+    def set_yaxis_ticks(self, change):
+        for i in range(self.nSubs):
+            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
+            curr = getattr(self.fig.layout, yname)
             curr.ticks = change['new']

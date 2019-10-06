@@ -3,8 +3,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
 
+from pandasvis.classes.module_template import ModuleTemplate
 from pandasvis.dialogs.joyplot_filter import JoyplotFilterDialog
-from pandasvis.dialogs.layout_dialog import LayoutDialog
 from pandasvis.utils.functions import AutoDictionary
 from pandasvis.utils.styles import palettes
 from pandasvis.utils.layouts import lay_base
@@ -20,160 +20,34 @@ import pandas as pd
 import os
 
 
-class Joyplot(QWidget):
+class Joyplot(ModuleTemplate):
     menu_parent = "Tabular"
     menu_name = "Joyplot"
 
     def __init__(self, parent):
-        """Description of this module."""
-        super().__init__()
-        self.parent = parent
-        self.name = "Joyplot"
+        """Module to create Joyplots."""
+        super().__init__(parent)
 
-        self.html = QWebEngineView()
+    def make_figure(self, *args, **kwargs):
+        """Custom code to produce figure to be placed in GUI."""
+        fig = make_joyplot(*args, **kwargs)
+        return fig
 
-        self.bt_close = QPushButton('Close')
-        self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
-        self.bt_close.clicked.connect(lambda: self.parent.close_tab_top(self))
-
-        self.bt_maxfig = QPushButton('Expand / Retract')
-        self.bt_maxfig.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMaxButton))
-        self.bt_maxfig.clicked.connect(self.parent.toggle_max_figure)
-
-        self.bt_layout = QPushButton('Layout')
-        self.bt_layout.setIcon(self.style().standardIcon(QStyle.SP_FileDialogListView))
-        self.bt_layout.clicked.connect(self.layout_dialog)
-
-        self.grid1 = QGridLayout()
-        self.grid1.setColumnStretch(0, 1)
-        self.grid1.addWidget(QWidget(), 0, 0, 1, 3)
-        self.grid1.addWidget(self.bt_layout, 0, 3, 1, 1)
-        self.grid1.addWidget(self.bt_maxfig, 0, 4, 1, 1)
-        self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
-
-        self.vbox = QVBoxLayout()
-        self.vbox.addLayout(self.grid1)
-        self.vbox.addWidget(self.html)
-        self.setLayout(self.vbox)
-
-    def layout_dialog(self):
-        """Opens layout dialog"""
-        w = LayoutDialog(parent=self)
-
-    def layout_update(self, changes):
-        """Updates figure layout with dictionary in changes"""
-        self.figure['layout'].update(changes)
-        nSubs = sum(['xaxis' in i for i in self.figure['layout']])
-        for i in range(nSubs):
-            xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
-            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
-            self.figure['layout'][xname].update(changes['xaxis'])
-            self.figure['layout'][yname].update(changes['yaxis'])
-        # Saves html to temporary folder
-        plt_plot(figure_or_data=self.figure,
-                 filename=os.path.join(self.parent.temp_dir, self.name+'.html'),
-                 auto_open=False)
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir, self.name+'.html'))
-        self.update_html(url=url)
-
-    def update_html(self, url):
-        """Loads temporary HTML file and render it."""
-        self.html.load(QtCore.QUrl(url))
-        self.html.show()
-
-    def make_plot(self):
-        """Makes object to be placed in new tab."""
-        def finish_thread(obj, error):
-            if error is None:
-                # # Load html to object
-                # url = QtCore.QUrl.fromLocalFile(os.path.join(obj.parent.temp_dir, obj.name+'.html'))
-                # obj.update_html(url=url)
-                # # Makes new tab on parent and load it with new object
-                # obj.parent.new_tab_top(obj, obj.name)
-                # # Writes at Logger
-                # obj.parent.write_to_logger(txt=self.name + " ready!")
-                #
-                # self.parent.console.push_vars({'fig': obj.figure})
-
-                # Write Figure + ipywidgets to a .ipynb file
-                nb = nbf.v4.new_notebook()
-                code = """
-                    import plotly
-                    import os
-                    from pandasvis.other.fig_controls import DashBoard
-
-                    fpath = os.path.join(r'""" + obj.parent.temp_dir + """', '""" + obj.name+'.json' + """')
-                    fig = plotly.io.read_json(fpath)
-                    fig_widget = plotly.graph_objs.FigureWidget(fig)
-                    dashboard = DashBoard(fig_widget)
-                    dashboard"""
-                nb['cells'] = [nbf.v4.new_code_cell(code)]
-                nbf.write(nb, obj.name+'.ipynb')
-
-                # Run instance of Voila with the just saved .ipynb file
-                self.voilathread = voilaThread(parent=obj, port=7000)
-                self.voilathread.start()
-
-                # Load Voila instance on GUI
-                obj.update_html('http://localhost:7000/')
-
-                obj.parent.new_tab_top(obj, obj.name)
-                obj.parent.write_to_logger(txt=self.name + " ready!")
-
-            else:
-                obj.parent.write_to_logger(txt="ERROR:")
-                obj.parent.write_to_logger(txt=str(error))
-
+    def pre_run(self):
+        """
+        Custom code to preprocess dataframes and generate the keyword arguments
+        needed in self.make_figure. It can contain any process you want, dialogs
+        for user interface, etc...
+        """
         # Select variables from Dataframe
         self.parent.update_selected_primary()
         df = self.parent.df[self.parent.selected_primary]
         # Open filter by condition dialog
         w = JoyplotFilterDialog(parent=self, df=df)
         if w.value == 1:
-            self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
-            self.parent.tabs_bottom.setCurrentIndex(1)
-            thread = BusyThread(w, self)
-            thread.finished.connect(lambda: finish_thread(self, error=thread.error))
-            thread.start()
-
-
-class voilaThread(QtCore.QThread):
-    def __init__(self, parent, port):
-        super().__init__()
-        self.parent = parent
-        self.port = port
-
-    def run(self):
-        os.system("voila "+self.parent.name+'.ipynb --no-browser --port '+str(self.port))
-
-    #def stop(self):
-    #    import signal
-    #    os.system(signal.SIGINT)
-
-
-# Runs conversion function, useful to wait for thread
-class BusyThread(QtCore.QThread):
-    def __init__(self, w, obj):
-        super().__init__()
-        self.w = w
-        self.obj = obj
-        self.error = None
-
-    def run(self):
-        try:
-            # Generate a dictionary of plotly plots
-            self.obj.figure = make_joyplot(df=self.w.df,
-                                           y_groups=self.w.y_groups,
-                                           group_by=self.w.group_by)
-            self.obj.figure.write_json(os.path.join(self.obj.parent.temp_dir, self.obj.name+'.json'))
-
-            # Saves html to temporary folder
-            # plt_plot(figure_or_data=self.obj.figure,
-            #          filename=os.path.join(self.obj.parent.temp_dir, self.obj.name+'.html'),
-            #          auto_open=False)
-            self.error = None
-        except Exception as error:
-            self.error = error
+            args = [df, w.y_groups]
+            kwargs = {'group_by': w.group_by}
+            return args, kwargs
 
 
 def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
@@ -304,7 +178,7 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
             "zeroline": False,
             "showline": False,
             "showgrid": True,
-            "gridcolor": "rgb(255,255,255)",
+            "gridcolor": "#ffffff",
             "gridwidth": 1
         })
 

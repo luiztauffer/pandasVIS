@@ -3,7 +3,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem, QLabel,
                              QMainWindow, QFileDialog, QAction, QVBoxLayout,
                              QGridLayout, QPushButton, QTreeWidgetItemIterator,
-                             QTabWidget, QSplitter, QTextEdit, QMessageBox)
+                             QTabWidget, QSplitter, QTextEdit, QMessageBox,
+                             QCheckBox)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from pandasvis.classes.trees import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
@@ -177,7 +178,7 @@ class Application(QMainWindow):
         # Check how many instances of same class already exist
         nInst = sum([item.menu_name == obj.menu_name for item in self.instances_list])
         obj.name += '_' + str(nInst)
-        obj.make_plot()
+        obj.run()
         self.instances_list.append(obj)
 
     def open_file(self, filename):
