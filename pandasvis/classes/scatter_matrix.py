@@ -9,7 +9,6 @@ from pandasvis.utils.layouts import lay_base
 
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
-from plotly import tools
 from sklearn.neighbors import KernelDensity
 import numpy as np
 import pandas as pd
@@ -71,7 +70,7 @@ def scatter_matrix(df, bins=10, color='grey', size=2, title_text=None,
         columns.remove(col)
 
     nVars = len(columns)
-    figs = tools.make_subplots(rows=nVars, cols=nVars, print_grid=False)
+    figs = plotly.subplots.make_subplots(rows=nVars, cols=nVars, print_grid=False)
     figs['layout'].update(lay_base)
 
     for cgrp, grp in enumerate(groups_names):

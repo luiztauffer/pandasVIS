@@ -172,7 +172,6 @@ class voilaThread(QtCore.QThread):
     def stop(self):
         pid = os.getpid()
         process = psutil.Process(pid)
-        self.parent.parent.console.push_vars({'proc': process})
         for child in process.children(recursive=True):
             is_listening = is_listening_to_port(child, self.port)
             if is_listening:

@@ -11,7 +11,6 @@ from pandasvis.utils.layouts import lay_base
 import plotly
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
-from plotly import tools
 import nbformat as nbf
 from sklearn.neighbors import KernelDensity
 import numpy as np
@@ -72,9 +71,9 @@ def make_joyplot(df, y_groups, group_by=None, hist_type='kde', kde_width=None,
 
     nVars = len(columns)
     if nVars > 1:
-        figs = tools.make_subplots(rows=int(np.ceil(nVars/2.)), cols=2, print_grid=False)
+        figs = plotly.subplots.make_subplots(rows=int(np.ceil(nVars/2.)), cols=2, print_grid=False)
     else:
-        figs = tools.make_subplots(rows=1, cols=1, print_grid=False)
+        figs = plotly.subplots.make_subplots(rows=1, cols=1, print_grid=False)
     figs['layout'].update(lay_base)
 
     # Iterations to generate curves and estimate best separation distances
