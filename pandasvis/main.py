@@ -243,7 +243,7 @@ class Application(QMainWindow):
         """Closes tab and removes associated objects"""
         name = object.name
         # Stops voilaThread
-        object.voilathread.terminate()
+        object.voilathread.stop()
         # Removes tab
         curr_ind = self.tabs_top.children()[0].currentIndex()
         self.tabs_top.removeTab(curr_ind)

@@ -3,6 +3,9 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                              QStyle)
 import os
+import socket
+import psutil
+import numpy as np
 import nbformat as nbf
 
 
@@ -91,10 +94,11 @@ class BaseFigure(QWidget):
             nb['cells'] = [nbf.v4.new_code_cell(code)]
             nbf.write(nb, self.name+'.ipynb')
             # Run instance of Voila with the just saved .ipynb file
-            self.voilathread = voilaThread(parent=self, port=7000)
+            port = get_free_port()
+            self.voilathread = voilaThread(parent=self, port=port)
             self.voilathread.start()
             # Load Voila instance on GUI
-            self.update_html('http://localhost:7000/')
+            self.update_html('http://localhost:'+str(port))
             self.parent.new_tab_top(self, self.name)
             self.parent.write_to_logger(txt=self.name + " ready!")
         else:
@@ -132,6 +136,30 @@ class BaseFigure(QWidget):
         self.figthread.start()
 
 
+def get_free_port():
+    not_free = True
+    while not_free:
+        port = np.random.randint(7000, 7999)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            res = sock.connect_ex(('localhost', port))
+            if res != 0:
+                not_free = False
+    return port
+
+def is_listening_to_port(process, port):
+    is_listening = False
+    # iterate over processe's children
+    for child in process.children(recursive=True):
+        # iterate over child connections
+        for con in child.connections():
+            if con.status=='LISTEN':
+                if isinstance(con.laddr.port, int):
+                    is_listening = con.laddr.port == port
+                elif isinstance(con.laddr.port, list):
+                    is_listening = port in con.laddr.port
+                return is_listening
+    return is_listening
+
 class voilaThread(QtCore.QThread):
     def __init__(self, parent, port):
         super().__init__()
@@ -142,9 +170,13 @@ class voilaThread(QtCore.QThread):
         os.system("voila "+self.parent.name+'.ipynb --no-browser --port '+str(self.port))
 
     def stop(self):
-    #    import signal
-    #    os.system(signal.SIGINT)
-        pass
+        pid = os.getpid()
+        process = psutil.Process(pid)
+        self.parent.parent.console.push_vars({'proc': process})
+        for child in process.children(recursive=True):
+            is_listening = is_listening_to_port(child, self.port)
+            if is_listening:
+                child.kill()
 
 
 class makefigureThread(QtCore.QThread):
