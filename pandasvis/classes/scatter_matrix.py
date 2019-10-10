@@ -7,6 +7,7 @@ from pandasvis.dialogs.filter_variables import FilterVariablesDialog
 from pandasvis.utils.styles import palettes
 from pandasvis.utils.layouts import lay_base
 
+import plotly
 from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from sklearn.neighbors import KernelDensity

@@ -40,7 +40,7 @@ class QTreeCustomPrimary(QTreeWidget):
             if action.text() == 'Summary':
                 print('')
             if action.text() == 'Set as Index':
-                print('')
+                pass # self.parent.df.
             if action.text() == 'Transform':
                 print('')
             if action.text() == 'Group-by':
@@ -102,7 +102,7 @@ class QTreeCustomSecondary(QTreeWidget):
 
 def move_to_secondary(parent, name):
     """Moves a variable from Primary to Secondary list of variables. Removes it from df."""
-    parent.secondary_vars[name] = parent.df[name].to_list()
+    parent.secondary_vars[name] = parent.df[name]
     parent.secondary_names = list(parent.secondary_vars.keys())
     parent.df.drop(name, axis=1, inplace=True)
     parent.primary_names = parent.df.keys().tolist()

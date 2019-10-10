@@ -4,11 +4,12 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem, QLabel,
                              QMainWindow, QFileDialog, QAction, QVBoxLayout,
                              QGridLayout, QPushButton, QTreeWidgetItemIterator,
                              QTabWidget, QSplitter, QTextEdit, QMessageBox,
-                             QCheckBox)
+                             QCheckBox, QHBoxLayout)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from pandasvis.classes.trees import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
 from pandasvis.utils.load_all_modules import load_all_modules
+from pandasvis.classes.trees import move_to_secondary, move_to_primary
 import numpy as np
 import pandas as pd
 import pandas_profiling
@@ -77,6 +78,14 @@ class Application(QMainWindow):
                                      "in the console with the variable 'df'")
         self.tree_primary.itemClicked.connect(self.update_selected_primary)
 
+        self.bt_toprimary = QPushButton('To primary')
+        self.bt_toprimary.clicked.connect(self.to_primary)
+        self.bt_tosecondary = QPushButton('To secondary')
+        self.bt_tosecondary.clicked.connect(self.to_secondary)
+        self.hbox_l1 = QHBoxLayout()
+        self.hbox_l1.addWidget(self.bt_toprimary)
+        self.hbox_l1.addWidget(self.bt_tosecondary)
+
         self.tree_secondary = QTreeCustomSecondary(parent=self)
         self.tree_secondary.setAlternatingRowColors(True)
         self.tree_secondary.setHeaderLabels(['Secondary Variables', 'type'])
@@ -97,16 +106,21 @@ class Application(QMainWindow):
         self.secondary_names = list(self.secondary_vars.keys())
         self.init_trees()
 
-        self.vbox1 = QSplitter(Qt.Vertical)
-        self.vbox1.addWidget(self.tree_primary)
+        self.vbox1 = QVBoxLayout()
+        self.vbox1.addLayout(self.hbox_l1)
         self.vbox1.addWidget(self.tree_secondary)
+        self.wbox1 = QWidget()
+        self.wbox1.setLayout(self.vbox1)
+        self.vsplit1 = QSplitter(Qt.Vertical)
+        self.vsplit1.addWidget(self.tree_primary)
+        self.vsplit1.addWidget(self.wbox1)
 
         self.grid_left1 = QGridLayout()
         self.grid_left1.setColumnStretch(5, 1)
         self.grid_left1.addWidget(self.bt_markall, 0, 0, 1, 2)
         self.grid_left1.addWidget(self.bt_unmarkall, 0, 2, 1, 2)
         self.grid_left1.addWidget(self.bt_test, 0, 4, 1, 1)
-        self.grid_left1.addWidget(self.vbox1, 1, 0, 1, 6)
+        self.grid_left1.addWidget(self.vsplit1, 1, 0, 1, 6)
         self.left_widget = QWidget()
         self.left_widget.setLayout(self.grid_left1)
 
@@ -171,7 +185,6 @@ class Application(QMainWindow):
         self.tools_grid.setRowStretch(3, 1)
         self.tab0.setLayout(self.tools_grid)
 
-
     def instantiate_module(self, module):
         """Instantiates a chosen module class."""
         obj = module(self)
@@ -195,8 +208,8 @@ class Application(QMainWindow):
             self.secondary_vars = {'var 3': np.zeros(100), 'var 4': np.zeros(100)}
             self.secondary_names = list(self.secondary_vars.keys())
             # Generates profile report
-            self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
-            self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
+            #self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
+            #self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
             # Reset GUI
             self.init_trees()
             self.init_console()
@@ -306,6 +319,37 @@ class Application(QMainWindow):
                 self.selected_secondary.append(item.text(0))
             self.iterator += 1
 
+    def to_primary(self):
+        self.iterator = QTreeWidgetItemIterator(self.tree_secondary, QTreeWidgetItemIterator.All)
+        selected = []
+        while self.iterator.value():
+            item = self.iterator.value()
+            if item.checkState(0) == 2:  # full-box checked
+                selected.append(item.text(0))
+            self.iterator += 1
+        for var in selected:
+            move_to_primary(self, var)
+
+    def to_secondary(self):
+        self.iterator = QTreeWidgetItemIterator(self.tree_primary, QTreeWidgetItemIterator.All)
+        selected = []
+        while self.iterator.value():
+            item = self.iterator.value()
+            if item.checkState(0) == 2:  # full-box checked
+                selected.append(item.text(0))
+            self.iterator += 1
+        for var in selected:
+            move_to_secondary(self, var)
+
+    def insert_from_file():
+        filename, ftype = QFileDialog.getOpenFileName(None, 'Open file', '', "(*.csv)")
+        if ftype == '(*.csv)':
+            self.file_path = filename
+            # Load primary variables
+            df_new = pd.read_csv(self.file_path)
+            
+            self.primary_names = self.df.keys().tolist()
+
     def closeEvent(self, event):
         """Before exiting, deletes temporary files."""
         shutil.rmtree(self.temp_dir, ignore_errors=False, onerror=None)
@@ -321,23 +365,6 @@ class Application(QMainWindow):
         msg.setInformativeText("<a href='https://github.com/luiztauffer/pandasVIS'>PandasVIS Github page</a>")
         msg.setStandardButtons(QMessageBox.Ok)
         msg.exec_()
-
-
-
-class dashViewer(QWidget):
-    def __init__(self, parent, url):
-        super().__init__()
-        self.parent = parent
-        self.web = QWebEngineView()
-        self.web.load(QtCore.QUrl(url))
-        self.web.show()
-
-        self.btn1 = QPushButton('Button')
-        self.lay = QVBoxLayout(self)
-        self.lay.addWidget(self.web)
-        self.lay.addWidget(self.btn1)
-        self.setLayout(self.lay)
-
 
 
 if __name__ == '__main__':
