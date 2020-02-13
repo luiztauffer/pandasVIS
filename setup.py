@@ -15,5 +15,5 @@ setup(name='pandasVIS',
       packages=find_packages(),
       include_package_data=True,
       install_requires=['PyQt5', 'matplotlib', 'numpy', 'pandas', 'pandas-profiling',
-                        'pyqtgraph', 'plotly', 'cufflinks', 'scikit-learn'],
+                        'pyqtgraph', 'plotly', 'cufflinks', 'scikit-learn', 'qtvoila'],
       )
