@@ -1,7 +1,7 @@
-from PyQt5 import QtCore
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
-                             QStyle)
+from PySide2 import QtCore
+from PySide2.QtWebEngineWidgets import QWebEngineView
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
+                               QStyle)
 import os
 import socket
 import psutil

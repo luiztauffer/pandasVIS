@@ -1,11 +1,10 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QWidget, QApplication, QTreeWidgetItem, QLabel,
-                             QMainWindow, QFileDialog, QAction, QVBoxLayout,
-                             QGridLayout, QPushButton, QTreeWidgetItemIterator,
-                             QTabWidget, QSplitter, QTextEdit, QMessageBox,
-                             QCheckBox, QHBoxLayout)
-from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PySide2 import QtCore
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import (QWidget, QApplication, QTreeWidgetItem, QLabel,
+                               QMainWindow, QFileDialog, QAction, QVBoxLayout,
+                               QGridLayout, QPushButton, QTreeWidgetItemIterator,
+                               QTabWidget, QSplitter, QTextEdit, QMessageBox,
+                               QHBoxLayout)
 from pandasvis.classes.trees import QTreeCustomPrimary, QTreeCustomSecondary
 from pandasvis.classes.console_widget import ConsoleWidget
 from pandasvis.utils.load_all_modules import load_all_modules
@@ -347,7 +346,7 @@ class Application(QMainWindow):
             self.file_path = filename
             # Load primary variables
             df_new = pd.read_csv(self.file_path)
-            
+
             self.primary_names = self.df.keys().tolist()
 
     def closeEvent(self, event):

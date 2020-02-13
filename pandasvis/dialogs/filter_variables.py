@@ -1,5 +1,5 @@
-from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog
+from PySide2 import uic
+from PySide2.QtWidgets import QDialog
 from threading import Event, Thread
 import numpy as np
 import pandas as pd

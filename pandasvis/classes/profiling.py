@@ -1,10 +1,7 @@
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
-                             QStyle)
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-
-import numpy as np
-import pandas as pd
+from PySide2 import QtCore
+from PySide2.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
+                               QStyle)
+from PySide2.QtWebEngineWidgets import QWebEngineView
 import pandas_profiling
 import os
 
