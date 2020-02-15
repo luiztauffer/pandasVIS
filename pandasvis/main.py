@@ -150,9 +150,7 @@ class Application(QMainWindow):
         self.setCentralWidget(self.hbox)
 
     def test(self):
-        from pandasvis.dialogs.layout_dialog import LayoutDialog
-        self.name = 'testing'
-        w = LayoutDialog(parent=self)
+        pass
 
     def load_modules(self):
         # Main tools tab buttons layout
@@ -205,9 +203,6 @@ class Application(QMainWindow):
             # Reset secondary variables
             self.secondary_vars = {'var 3': np.zeros(100), 'var 4': np.zeros(100)}
             self.secondary_names = list(self.secondary_vars.keys())
-            # Generates profile report
-            # self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
-            # self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
             # Reset GUI
             self.init_trees()
             self.init_console()
@@ -238,11 +233,7 @@ class Application(QMainWindow):
 
     def new_tab_top(self, object, title):
         """Opens new tab."""
-        layout = QVBoxLayout()
-        layout.addWidget(object)
-        tab = QWidget()
-        tab.setLayout(layout)
-        self.tabs_top.addTab(tab, title)
+        self.tabs_top.addTab(object, title)
         nTabs = self.tabs_top.children()[0].count()
         self.tabs_top.setCurrentIndex(nTabs - 1)
 
