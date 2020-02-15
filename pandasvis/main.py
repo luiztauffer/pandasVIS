@@ -11,7 +11,6 @@ from pandasvis.utils.load_all_modules import load_all_modules
 from pandasvis.classes.trees import move_to_secondary, move_to_primary
 import numpy as np
 import pandas as pd
-import pandas_profiling
 import datetime
 import os
 import sys
@@ -254,8 +253,8 @@ class Application(QMainWindow):
     def close_tab_top(self, object):
         """Closes tab and removes associated objects"""
         name = object.name
-        # Stops voilaThread
-        object.stop_threads()
+        # Closes all child Threads
+        object.close_threads()
         # Removes tab
         curr_ind = self.tabs_top.children()[0].currentIndex()
         self.tabs_top.removeTab(curr_ind)

@@ -36,33 +36,6 @@ class BaseFigure(QWidget):
         self.vbox.addWidget(self.voila_widget)
         self.setLayout(self.vbox)
 
-    def fig_thread_finished(self):
-        error = self.fig_thread.error
-        self.fig_thread.quit()
-        if error is None:
-            # Write Figure + ipywidgets to a .ipynb file
-            code = """
-                import plotly
-                import os
-                from pandasvis.other.fig_controls import DashBoard
-
-                fpath = os.path.join(r'""" + self.parent.temp_dir + """', '""" + self.name + '.json' + """')
-                fig = plotly.io.read_json(fpath)
-                fig_widget = plotly.graph_objs.FigureWidget(fig)
-                dashboard = DashBoard(fig_widget)
-                dashboard"""
-            # Stores code on voila widget
-            self.voila_widget.code = code
-            # Runs Voila process and renders result on widget
-            self.voila_widget.run_voila()
-
-            # Load Voila instance on GUI
-            self.parent.new_tab_top(self, self.name)
-            self.parent.write_to_logger(txt=self.name + " ready!")
-        else:
-            self.parent.write_to_logger(txt="ERROR:")
-            self.parent.write_to_logger(txt=str(error))
-
     def make_figure(self, **kwargs):
         """Custom code to produce figure to be placed in GUI."""
         fig = []
@@ -93,8 +66,35 @@ class BaseFigure(QWidget):
         self.fig_thread.finished.connect(self.fig_thread_finished)
         self.fig_thread.start()
 
-    def stop_threads(self):
-        """Stops threads."""
+    def fig_thread_finished(self):
+        error = self.fig_thread.error
+        self.fig_thread.quit()
+        if error is None:
+            # Write Figure + ipywidgets to a .ipynb file
+            code = """
+                import plotly
+                import os
+                from pandasvis.other.fig_controls import DashBoard
+
+                fpath = os.path.join(r'""" + self.parent.temp_dir + """', '""" + self.name + '.json' + """')
+                fig = plotly.io.read_json(fpath)
+                fig_widget = plotly.graph_objs.FigureWidget(fig)
+                dashboard = DashBoard(fig_widget)
+                dashboard"""
+            # Stores code on voila widget
+            self.voila_widget.code = code
+            # Runs Voila process and renders result on widget
+            self.voila_widget.run_voila()
+
+            # Load Voila instance on GUI
+            self.parent.new_tab_top(self, self.name)
+            self.parent.write_to_logger(txt=self.name + " ready!")
+        else:
+            self.parent.write_to_logger(txt="ERROR:")
+            self.parent.write_to_logger(txt=str(error))
+
+    def close_threads(self):
+        """Closes threads."""
         self.voila_widget.close_renderer()
 
 
