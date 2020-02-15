@@ -164,7 +164,7 @@ class Application(QMainWindow):
         # modules and lambdas lists
         self.instances_list = []
         self.modules_list = load_all_modules()
-        self.lambdas_list = [ (lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list ]
+        self.lambdas_list = [(lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list]
         for i, module in enumerate(self.modules_list):
             # Populates Menu bar
             action = QAction(module.menu_name, self)
@@ -255,7 +255,7 @@ class Application(QMainWindow):
         """Closes tab and removes associated objects"""
         name = object.name
         # Stops voilaThread
-        object.voilathread.stop()
+        object.stop_threads()
         # Removes tab
         curr_ind = self.tabs_top.children()[0].currentIndex()
         self.tabs_top.removeTab(curr_ind)
