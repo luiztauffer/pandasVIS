@@ -7,7 +7,7 @@ with open('README.md', 'r') as f:
     long_description = f.read()
 
 requirements = ['PySide2', 'matplotlib', 'numpy', 'pandas', 'pandas-profiling',
-                'plotly', 'scikit-learn', 'qtvoila']
+                'plotly', 'scikit-learn', 'qtvoila', 'qtconsole']
 
 setup_requirements = []
 

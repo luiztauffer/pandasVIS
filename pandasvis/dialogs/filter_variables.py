@@ -1,5 +1,5 @@
-from PySide2 import uic
 from PySide2.QtWidgets import QDialog
+from pandasvis.ui.ui_filter_variables import Ui_Dialog
 from threading import Event, Thread
 import numpy as np
 import pandas as pd
@@ -10,8 +10,7 @@ ui_path = os.path.join(os.path.dirname(__file__), '..', 'ui')
 
 
 # Filter variables dialog ------------------------------------------------------
-Ui_FilterVars, _ = uic.loadUiType(os.path.join(ui_path, "filter_variables.ui"))
-class FilterVariablesDialog(QDialog, Ui_FilterVars):
+class FilterVariablesDialog(QDialog, Ui_Dialog):
     def __init__(self, parent, df):
         super().__init__()
         self.setupUi(self)
