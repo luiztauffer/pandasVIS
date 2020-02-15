@@ -1,12 +1,8 @@
 from PySide2 import QtCore
-from PySide2.QtWebEngineWidgets import QWebEngineView
 from PySide2.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
                                QStyle)
+from qtvoila import QtVoila
 import os
-import socket
-import psutil
-import numpy as np
-import nbformat as nbf
 
 
 class BaseFigure(QWidget):
@@ -14,12 +10,12 @@ class BaseFigure(QWidget):
     menu_name = "ModuleTemplate"
 
     def __init__(self, parent):
-        """Description of this module."""
+        """Base figure to be added as a Tab."""
         super().__init__()
         self.parent = parent
         self.name = self.menu_name
 
-        self.html = QWebEngineView()
+        self.voila_widget = QtVoila()
 
         self.bt_close = QPushButton('Close')
         self.bt_close.setIcon(self.style().standardIcon(QStyle.SP_DialogCloseButton))
@@ -29,76 +25,38 @@ class BaseFigure(QWidget):
         self.bt_maxfig.setIcon(self.style().standardIcon(QStyle.SP_TitleBarMaxButton))
         self.bt_maxfig.clicked.connect(self.parent.toggle_max_figure)
 
-        self.bt_layout = QPushButton('Layout')
-        self.bt_layout.setIcon(self.style().standardIcon(QStyle.SP_FileDialogListView))
-        self.bt_layout.clicked.connect(self.layout_dialog)
-
         self.grid1 = QGridLayout()
         self.grid1.setColumnStretch(0, 1)
         self.grid1.addWidget(QWidget(), 0, 0, 1, 3)
-        self.grid1.addWidget(self.bt_layout, 0, 3, 1, 1)
         self.grid1.addWidget(self.bt_maxfig, 0, 4, 1, 1)
         self.grid1.addWidget(self.bt_close, 0, 5, 1, 1)
 
         self.vbox = QVBoxLayout()
         self.vbox.addLayout(self.grid1)
-        self.vbox.addWidget(self.html)
+        self.vbox.addWidget(self.voila_widget)
         self.setLayout(self.vbox)
 
-    def layout_dialog(self):
-        """Opens layout dialog"""
-        w = LayoutDialog(parent=self)
-
-    def layout_update(self, changes):
-        """Updates figure layout with dictionary in changes"""
-        self.figure['layout'].update(changes)
-        nSubs = sum(['xaxis' in i for i in self.figure['layout']])
-        for i in range(nSubs):
-            xname = 'xaxis' if i == 0 else 'xaxis'+str(i)
-            yname = 'yaxis' if i == 0 else 'yaxis'+str(i)
-            self.figure['layout'][xname].update(changes['xaxis'])
-            self.figure['layout'][yname].update(changes['yaxis'])
-        # Saves html to temporary folder
-        plt_plot(figure_or_data=self.figure,
-                 filename=os.path.join(self.parent.temp_dir, self.name+'.html'),
-                 auto_open=False)
-        url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir, self.name+'.html'))
-        self.update_html(url=url)
-
-    def update_html(self, url):
-        """Loads temporary HTML file and render it."""
-        self.html.load(QtCore.QUrl(url))
-        self.html.show()
-
-    def figthread_finished(self):
-        error = self.figthread.error
+    def fig_thread_finished(self):
+        error = self.fig_thread.error
+        self.fig_thread.quit()
         if error is None:
-            # Layout editing - Slow method -------------------------------------
-            # url = QtCore.QUrl.fromLocalFile(os.path.join(self.parent.temp_dir,
-            #                                              self.name+'.html'))
-            # self.update_html(url=url)
-            # ------------------------------------------------------------------
-
             # Write Figure + ipywidgets to a .ipynb file
-            nb = nbf.v4.new_notebook()
             code = """
                 import plotly
                 import os
                 from pandasvis.other.fig_controls import DashBoard
 
-                fpath = os.path.join(r'""" + self.parent.temp_dir + """', '""" + self.name+'.json' + """')
+                fpath = os.path.join(r'""" + self.parent.temp_dir + """', '""" + self.name + '.json' + """')
                 fig = plotly.io.read_json(fpath)
                 fig_widget = plotly.graph_objs.FigureWidget(fig)
                 dashboard = DashBoard(fig_widget)
                 dashboard"""
-            nb['cells'] = [nbf.v4.new_code_cell(code)]
-            nbf.write(nb, self.name+'.ipynb')
-            # Run instance of Voila with the just saved .ipynb file
-            port = get_free_port()
-            self.voilathread = voilaThread(parent=self, port=port)
-            self.voilathread.start()
+            # Stores code on voila widget
+            self.voila_widget.code = code
+            # Runs Voila process and renders result on widget
+            self.voila_widget.run_voila()
+
             # Load Voila instance on GUI
-            self.update_html('http://localhost:'+str(port))
             self.parent.new_tab_top(self, self.name)
             self.parent.write_to_logger(txt=self.name + " ready!")
         else:
@@ -131,55 +89,13 @@ class BaseFigure(QWidget):
         self.parent.write_to_logger(txt="Preparing " + self.name + "... please wait.")
         self.parent.tabs_bottom.setCurrentIndex(1)
         # Starts figure making Thread
-        self.figthread = makefigureThread(*args, **kwargs)
-        self.figthread.finished.connect(self.figthread_finished)
-        self.figthread.start()
+        self.fig_thread = makefigureThread(*args, **kwargs)
+        self.fig_thread.finished.connect(self.fig_thread_finished)
+        self.fig_thread.start()
 
-
-def get_free_port():
-    not_free = True
-    while not_free:
-        port = np.random.randint(7000, 7999)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            res = sock.connect_ex(('localhost', port))
-            if res != 0:
-                not_free = False
-    return port
-
-def is_listening_to_port(process, port):
-    is_listening = False
-    # iterate over processe's children
-    for child in process.children(recursive=True):
-        # iterate over child connections
-        for con in child.connections():
-            if con.status=='LISTEN':
-                if isinstance(con.laddr.port, int):
-                    is_listening = con.laddr.port == port
-                elif isinstance(con.laddr.port, list):
-                    is_listening = port in con.laddr.port
-                return is_listening
-    return is_listening
-
-class voilaThread(QtCore.QThread):
-    def __init__(self, parent, port):
-        super().__init__()
-        self.parent = parent
-        self.port = port
-
-    def run(self):
-        os.system("voila "+self.parent.name+'.ipynb --no-browser --port '+str(self.port))
-
-    def stop(self):
-        pid = os.getpid()
-        process = psutil.Process(pid)
-        proc_list = []
-        for child in process.children(recursive=True):
-            is_listening = is_listening_to_port(child, self.port)
-            if is_listening:
-                proc_list.append(child)
-        for proc in proc_list:
-            for child in process.children(recursive=True):
-                child.kill()
+    def stop_threads(self):
+        """Stops threads."""
+        self.voila_widget.close_renderer()
 
 
 class makefigureThread(QtCore.QThread):
@@ -196,16 +112,9 @@ class makefigureThread(QtCore.QThread):
                 *self.figure_function_args,
                 **self.figure_function_kwargs
             )
-
             # Saves json to temporary folder
-            save_file_path = os.path.join(self.parent.parent.temp_dir, self.parent.name+'.json')
+            save_file_path = os.path.join(self.parent.parent.temp_dir, self.parent.name + '.json')
             self.parent.figure.write_json(save_file_path)
-
-            # Saves html to temporary folder
-            # save_file_path = os.path.join(self.parent.parent.temp_dir, self.parent.name+'.html')
-            # plt_plot(figure_or_data=self.parent.figure,
-            #          filename=save_file_path,
-            #          auto_open=False)
             self.error = None
         except Exception as error:
             self.error = error

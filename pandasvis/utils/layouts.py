@@ -5,8 +5,8 @@ lay_base = AutoDictionary()
 
 lay_base['hovermode'] = "closest"
 lay_base['autosize'] = True
-lay_base['width'] =  700
-lay_base['height'] =  450
+lay_base['width'] = 700
+lay_base['height'] = 450
 lay_base['font']['family'] = "Arial"
 lay_base['font']['size'] = 10
 lay_base['font']['color'] = "#0000ff"
@@ -18,7 +18,7 @@ lay_base['showlegend'] = True
 lay_base['margin']['l'] = 80
 lay_base['margin']['t'] = 100
 lay_base['margin']['b'] = 80
-lay_base['margin']['autoexpand'] =  True
+lay_base['margin']['autoexpand'] = True
 
 lay_base['title']['text'] = ""
 lay_base['title']['font']['family'] = "Arial"

@@ -1,19 +1,19 @@
-from plotly.offline import iplot
+from pandasvis.utils.styles import palettes
 import plotly.graph_objs as go
 from plotly import tools
 import numpy as np
 import pandas as pd
 
+
 def event_related_matrix(df, bins=10, color='grey', size=2, title_text=None,
-                          hist_type='kde', kde_width=None, groupby=None,
-                          palette=None, **iplot_kwargs):
+                         hist_type='kde', kde_width=None, groupby=None,
+                         palette=None, **iplot_kwargs):
     """
     Time series event related averages and
     """
     if palette is None:
-        #Tableau10 scheme
-        palette = ["#4e79a7","#f28e2c","#e15759","#76b7b2","#59a14f","#edc949",
-                   "#af7aa1","#ff9da7","#9c755f","#bab0ab"]
+        # Tableau10 scheme
+        palette = palettes['Tableau10']
 
     columns = df.columns.to_list()
     if groupby is not None:
@@ -23,10 +23,10 @@ def event_related_matrix(df, bins=10, color='grey', size=2, title_text=None,
     else:
         groups_names = ['all']
 
-    #Remove non-numerical columns
+    # Remove non-numerical columns
     for col in columns:
         dtype = str(df[col].dtypes)
-        if not (dtype=='int64' or dtype=='float64'):
+        if not (dtype == 'int64' or dtype == 'float64'):
             columns.remove(col)
 
     nVars = len(columns)
@@ -41,11 +41,11 @@ def event_related_matrix(df, bins=10, color='grey', size=2, title_text=None,
         for ci, i in enumerate(columns):
             for cj, j in enumerate(columns):
                 ii += 1
-                if i==j:  #Univariate distribution
+                if i == j:  # Univariate distribution
                     y = df_aux[i].to_numpy()
-                    if hist_type=='kde':    #Gaussian KDE
+                    if hist_type == 'kde':  # Gaussian KDE
                         if kde_width is None:
-                            bandwidth = 0.1*np.nanstd(y)/np.abs(np.nanmean(y))
+                            bandwidth = 0.1 * np.nanstd(y) / np.abs(np.nanmean(y))
                         Ym = np.min(df[i].to_numpy())
                         YM = np.max(df[i].to_numpy())
                         xx = np.linspace(Ym, YM, 200)

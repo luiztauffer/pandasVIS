@@ -164,7 +164,7 @@ class Application(QMainWindow):
         # modules and lambdas lists
         self.instances_list = []
         self.modules_list = load_all_modules()
-        self.lambdas_list = [ (lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list ]
+        self.lambdas_list = [(lambda a: lambda: self.instantiate_module(a))(o) for o in self.modules_list]
         for i, module in enumerate(self.modules_list):
             # Populates Menu bar
             action = QAction(module.menu_name, self)
@@ -179,7 +179,7 @@ class Application(QMainWindow):
             btn = QPushButton(module.menu_name)
             btn.clicked.connect(self.lambdas_list[i])
             self.tools_grid.addWidget(btn, 1, i, 1, 1)
-        self.tools_grid.addWidget(QWidget(), 1, i+1, 1, 1)
+        self.tools_grid.addWidget(QWidget(), 1, i + 1, 1, 1)
         self.tools_grid.addWidget(QWidget(), 2, 0, 1, 1)
         self.tools_grid.setRowStretch(3, 1)
         self.tab0.setLayout(self.tools_grid)
@@ -199,7 +199,7 @@ class Application(QMainWindow):
             filename, ftype = QFileDialog.getOpenFileName(None, 'Open file', '', "(*.csv)")
         if ftype == '(*.csv)':
             self.file_path = filename
-            self.setWindowTitle('PandasVIS - '+os.path.split(os.path.abspath(self.file_path))[1])
+            self.setWindowTitle('PandasVIS - ' + os.path.split(os.path.abspath(self.file_path))[1])
             # Load primary variables
             self.df = pd.read_csv(self.file_path)
             self.primary_names = self.df.keys().tolist()
@@ -207,8 +207,8 @@ class Application(QMainWindow):
             self.secondary_vars = {'var 3': np.zeros(100), 'var 4': np.zeros(100)}
             self.secondary_names = list(self.secondary_vars.keys())
             # Generates profile report
-            #self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
-            #self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
+            # self.df_profile = self.df.profile_report(title='Summary Report', style={'full_width': True}, )
+            # self.df_profile.to_file(os.path.join(self.temp_dir, 'summary_report.html'), silent=True)
             # Reset GUI
             self.init_trees()
             self.init_console()
@@ -245,7 +245,7 @@ class Application(QMainWindow):
         tab.setLayout(layout)
         self.tabs_top.addTab(tab, title)
         nTabs = self.tabs_top.children()[0].count()
-        self.tabs_top.setCurrentIndex(nTabs-1)
+        self.tabs_top.setCurrentIndex(nTabs - 1)
 
     def new_tab_bottom(self, tab_object, title):
         """Opens new tab."""
@@ -255,7 +255,7 @@ class Application(QMainWindow):
         """Closes tab and removes associated objects"""
         name = object.name
         # Stops voilaThread
-        object.voilathread.stop()
+        object.stop_threads()
         # Removes tab
         curr_ind = self.tabs_top.children()[0].currentIndex()
         self.tabs_top.removeTab(curr_ind)
@@ -346,7 +346,6 @@ class Application(QMainWindow):
             self.file_path = filename
             # Load primary variables
             df_new = pd.read_csv(self.file_path)
-
             self.primary_names = self.df.keys().tolist()
 
     def closeEvent(self, event):
