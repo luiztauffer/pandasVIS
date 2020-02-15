@@ -1,0 +1,9 @@
+PySide2
+matplotlib
+numpy
+pandas
+pandas-profiling
+plotly
+scikit-learn
+qtvoila
+qtconsole
