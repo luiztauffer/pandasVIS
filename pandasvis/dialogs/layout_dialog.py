@@ -1,8 +1,8 @@
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtWidgets import (QMainWindow, QPushButton, QWidget, QGridLayout,
-                             QStyle, QGroupBox, QLineEdit, QCheckBox,
-                             QVBoxLayout, QHBoxLayout, QLabel, QColorDialog,
-                             QComboBox, QScrollArea)
+from PySide2 import QtCore, QtGui
+from PySide2.QtWidgets import (QMainWindow, QPushButton, QWidget, QGridLayout,
+                               QStyle, QLineEdit, QCheckBox,
+                               QVBoxLayout, QHBoxLayout, QLabel, QColorDialog,
+                               QComboBox, QScrollArea)
 from pandasvis.utils.classes import CollapsibleBox
 from pandasvis.utils.functions import AutoDictionary
 

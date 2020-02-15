@@ -1,19 +1,12 @@
-from PyQt5 import QtCore
-from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QGridLayout, QPushButton,
-                             QStyle)
-
 from pandasvis.classes.base_figure import BaseFigure
 from pandasvis.dialogs.filter_variables import FilterVariablesDialog
 from pandasvis.utils.styles import palettes
 from pandasvis.utils.layouts import lay_base
 
 import plotly
-from plotly.offline import plot as plt_plot
 import plotly.graph_objs as go
 from sklearn.neighbors import KernelDensity
 import numpy as np
-import pandas as pd
-import os
 
 
 class ScatterMatrix(BaseFigure):

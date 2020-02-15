@@ -1,18 +1,10 @@
 # PandasVIS
 Tabular data exploration GUI, with Data Science and Machine Learning tools.
 
-Powered by: [Pandas](https://pandas.pydata.org/), [PyQt5](https://www.riverbankcomputing.com/software/pyqt/intro), [Pandas Profiling](https://github.com/pandas-profiling/pandas-profiling), [Plotly](https://plot.ly/)
+Powered by: [Pandas](https://pandas.pydata.org/), [PySide2](https://wiki.qt.io/Qt_for_Python), [Pandas Profiling](https://github.com/pandas-profiling/pandas-profiling), [Plotly](https://plot.ly/), [QtConsole](https://ipython.org/ipython-doc/dev/interactive/qtconsole.html)
 
 ### Installation
-To clone the repository and set up a conda environment, do:
-
-```bash
-$ git clone https://github.com/luiztauffer/pandasVIS
-$ conda env create -f pandasVIS/make_env.yml
-$ source activate pandas_vis
-```
-
-Alternatively, to install PandasVIS directly in an existing environment:
+To install PandasVIS directly in an existing environment:
 
 ```bash
 pip install git+https://github.com/luiztauffer/pandasVIS
@@ -27,9 +19,9 @@ from pandasvis.main import main as pdvis
 app = pdvis()
 ```
 
-Save this convenience script, e.g. `call_pandas_vis.py`, in any directory and run in terminal:
+Save this convenience script, e.g. `run_pandas_vis.py`, in any directory and run in terminal:
 ```bash
-$ python call_pandas_vis.py
+$ python run_pandas_vis.py
 ```
 
 ### Examples

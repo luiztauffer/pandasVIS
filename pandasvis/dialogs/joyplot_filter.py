@@ -1,6 +1,5 @@
-from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog
-from threading import Event, Thread
+from PySide2.QtWidgets import QDialog
+from pandasvis.ui.ui_joyplot_filter import Ui_Dialog
 import numpy as np
 import pandas as pd
 import os
@@ -10,8 +9,7 @@ ui_path = os.path.join(os.path.dirname(__file__), '..', 'ui')
 
 
 # Filter variables dialog ------------------------------------------------------
-Ui_Filter, _ = uic.loadUiType(os.path.join(ui_path, "joyplot_filter.ui"))
-class JoyplotFilterDialog(QDialog, Ui_Filter):
+class JoyplotFilterDialog(QDialog, Ui_Dialog):
     def __init__(self, parent, df):
         super().__init__()
         self.setupUi(self)
@@ -97,7 +95,7 @@ class JoyplotFilterDialog(QDialog, Ui_Filter):
         if curr_all == '':
             self.textEdit_2.setText(curr_cond)
         else:
-            self.textEdit_2.setText('('+curr_all+') AND ('+curr_cond+')')
+            self.textEdit_2.setText('(' + curr_all + ') AND (' + curr_cond + ')')
 
     def clear_conditions(self):
         self.textEdit_2.setText('')
@@ -124,16 +122,16 @@ class JoyplotFilterDialog(QDialog, Ui_Filter):
             # Possible operations: ['==', '!=', '<', '>']
             if op['operation'] == '==':
                 aux = (op1 == op2).to_numpy()
-                mask = mask*aux
+                mask = mask * aux
             elif op['operation'] == '!=':
                 aux = (op1 != op2).to_numpy()
-                mask = mask*aux
+                mask = mask * aux
             elif op['operation'] == '<':
                 aux = (op1 < op2).to_numpy()
-                mask = mask*aux
+                mask = mask * aux
             elif op['operation'] == '>':
                 aux = (op1 > op2).to_numpy()
-                mask = mask*aux
+                mask = mask * aux
         self.df = self.df[mask]
         self.y_groups = self.comboBox_ygroups.currentText()
         self.group_by = self.comboBox_groupby.currentText()
